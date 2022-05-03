@@ -116,15 +116,39 @@ func (suite *ApiTestSuite) TestCreateWithExistingLongUrlReturns200WithExistingSh
 	assert.Equal(shortUrl, data["short_url"])
 }
 
+func (suite *ApiTestSuite) TestCreateWithInvalidJsonReturns400WithErrorMessage() {
+	t := suite.T()
+	testServer := suite.Server
+	assert := suite.Assert()
+
+	result, err := makeCreateRequest(map[string]interface{}{
+		"foo": "bar",
+	}, testServer.URL)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(400, result.Response.StatusCode)
+
+	errors := result.Data["errors"]
+
+	assert.NotNil(errors)
+}
+
 type CreateShortUrlResult struct {
 	Data     map[string]interface{}
 	Response *http.Response
 }
 
 func createShortUrl(longUrl, url string) (*CreateShortUrlResult, error) {
-	postBody, err := json.Marshal(map[string]interface{}{
+	return makeCreateRequest(map[string]interface{}{
 		"long_url": longUrl,
-	})
+	}, url)
+}
+
+func makeCreateRequest(data map[string]interface{}, url string) (*CreateShortUrlResult, error) {
+	postBody, err := json.Marshal(data)
 
 	if err != nil {
 		return nil, err
@@ -138,6 +162,8 @@ func createShortUrl(longUrl, url string) (*CreateShortUrlResult, error) {
 	defer resp.Body.Close()
 
 	bytes, err := ioutil.ReadAll(resp.Body)
+
+	fmt.Printf("RESPONSE: %s\n", string(bytes))
 
 	if err != nil {
 		return nil, err

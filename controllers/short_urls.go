@@ -7,6 +7,8 @@ import (
 
 	"url-shortener/models"
 
+	"github.com/go-playground/validator/v10"
+
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
@@ -25,7 +27,7 @@ func (controller *ShortUrlController) CreateShortUrl(c *gin.Context) {
 	db := controller.DB
 	var request models.ShortUrl
 
-	if c.BindJSON(&request) == nil {
+	if err := c.ShouldBindJSON(&request); err == nil {
 		// https://github.com/go-gorm/gorm/issues/4037
 		if err := db.Create(&request).Error; err != nil {
 			var pgErr *pgconn.PgError
@@ -47,6 +49,11 @@ func (controller *ShortUrlController) CreateShortUrl(c *gin.Context) {
 			c.JSON(http.StatusCreated, gin.H{
 				"short_url": fmt.Sprintf("http://%s/%d", c.Request.Host, request.Id),
 			})
+		}
+	} else {
+		var verr validator.ValidationErrors
+		if errors.As(err, &verr) {
+			c.JSON(http.StatusBadRequest, gin.H{"errors": FormatErrors(verr)})
 		}
 	}
 }
