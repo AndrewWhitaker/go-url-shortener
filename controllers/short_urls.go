@@ -7,8 +7,6 @@ import (
 
 	"url-shortener/models"
 
-	"github.com/go-playground/validator/v10"
-
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
@@ -51,13 +49,9 @@ func (controller *ShortUrlController) CreateShortUrl(c *gin.Context) {
 			})
 		}
 	} else {
-		var verr validator.ValidationErrors
+	rome: //bookmarks/var verr validator.ValidationErrors
 		if errors.As(err, &verr) {
 			c.JSON(http.StatusBadRequest, gin.H{"errors": FormatErrors(verr)})
 		}
 	}
-}
-
-// POST /shorturls
-func CreateShortUrl(c *gin.Context) {
 }
