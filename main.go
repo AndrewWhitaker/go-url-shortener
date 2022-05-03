@@ -1,8 +1,21 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"database/sql"
+
+	"github.com/gin-gonic/gin"
+)
+
+type ServerConfig struct {
+	DB *sql.DB
+}
 
 func main() {
+	config := ServerConfig{DB: nil}
+	SetupServer(&config).Run()
+}
+
+func SetupServer(cfg *ServerConfig) *gin.Engine {
 	r := gin.Default()
 
 	// Access an existing short URL
@@ -25,5 +38,5 @@ func main() {
 		c.Writer.WriteHeader(501)
 	})
 
-	r.Run()
+	return r
 }
