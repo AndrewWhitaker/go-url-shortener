@@ -5,29 +5,36 @@ import (
 	"fmt"
 	"net/http"
 
-	"url-shortener/db"
 	"url-shortener/models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
+	"gorm.io/gorm"
 )
 
-// POST /shorturls
-func CreateShortUrl(c *gin.Context) {
-	gormDb := db.DB
+type ShortUrlController struct {
+	DB *gorm.DB
+}
+
+func NewShortUrlController(db *gorm.DB) *ShortUrlController {
+	return &ShortUrlController{DB: db}
+}
+
+func (controller *ShortUrlController) CreateShortUrl(c *gin.Context) {
+	db := controller.DB
 	var request models.ShortUrl
 
 	if c.BindJSON(&request) == nil {
 		// https://github.com/go-gorm/gorm/issues/4037
-		if err := gormDb.Create(&request).Error; err != nil {
+		if err := db.Create(&request).Error; err != nil {
 			var pgErr *pgconn.PgError
 
 			if errors.As(err, &pgErr) {
 				if pgErr.Code == pgerrcode.UniqueViolation {
 					var existing models.ShortUrl
 
-					gormDb.Where(&models.ShortUrl{LongUrl: request.LongUrl}).First(&existing)
+					db.Where(&models.ShortUrl{LongUrl: request.LongUrl}).First(&existing)
 
 					c.JSON(http.StatusOK, gin.H{
 						"short_url": fmt.Sprintf("http://%s/%d", c.Request.Host, existing.Id),
@@ -42,4 +49,8 @@ func CreateShortUrl(c *gin.Context) {
 			})
 		}
 	}
+}
+
+// POST /shorturls
+func CreateShortUrl(c *gin.Context) {
 }

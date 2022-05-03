@@ -10,9 +10,7 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-var DB *gorm.DB
-
-func ConnectDatabase(sqlDB *sql.DB) error {
+func ConnectDatabase(sqlDB *sql.DB) (*gorm.DB, error) {
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		Conn: sqlDB,
 	}), &gorm.Config{
@@ -21,7 +19,5 @@ func ConnectDatabase(sqlDB *sql.DB) error {
 
 	db.AutoMigrate(&models.ShortUrl{})
 
-	DB = db
-
-	return err
+	return db, err
 }

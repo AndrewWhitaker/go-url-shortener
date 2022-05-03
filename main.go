@@ -19,11 +19,13 @@ func main() {
 
 func SetupServer(cfg *ServerConfig) *gin.Engine {
 	r := gin.Default()
-	err := db.ConnectDatabase(cfg.DB)
+	db, err := db.ConnectDatabase(cfg.DB)
 
 	if err != nil {
 		panic("Failed to connect to database")
 	}
+
+	shortUrlController := controllers.NewShortUrlController(db)
 
 	// Access an existing short URL
 	r.GET("/:slug", func(c *gin.Context) {
@@ -31,7 +33,7 @@ func SetupServer(cfg *ServerConfig) *gin.Engine {
 	})
 
 	// Create a new short URL
-	r.POST("/shorturls", controllers.CreateShortUrl)
+	r.POST("/shorturls", shortUrlController.CreateShortUrl)
 
 	// Get details about an existing short URL
 	r.GET("/shorturls/:slug", func(c *gin.Context) {
