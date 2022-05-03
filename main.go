@@ -3,6 +3,8 @@ package main
 import (
 	"database/sql"
 	"errors"
+	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -48,11 +50,6 @@ func SetupServer(cfg *ServerConfig) *gin.Engine {
 		c.Writer.WriteHeader(501)
 	})
 
-	type GormErr struct {
-		Number  int    `json:"Number"`
-		Message string `json:"Message"`
-	}
-
 	// Create a new short URL
 	r.POST("/shorturls", func(c *gin.Context) {
 		var request ShortUrl
@@ -63,11 +60,21 @@ func SetupServer(cfg *ServerConfig) *gin.Engine {
 
 				if errors.As(err, &pgErr) {
 					if pgErr.Code == pgerrcode.UniqueViolation {
-						c.Writer.WriteHeader(409)
+						var existing ShortUrl
+
+						gormDb.Where(&ShortUrl{LongUrl: request.LongUrl}).First(&existing)
+
+						c.JSON(http.StatusOK, gin.H{
+							"short_url": fmt.Sprintf("http://%s/%d", c.Request.Host, existing.Id),
+						})
 					}
 				} else {
-					c.Writer.WriteHeader(501)
+					c.Writer.WriteHeader(http.StatusNotImplemented)
 				}
+			} else {
+				c.JSON(http.StatusCreated, gin.H{
+					"short_url": fmt.Sprintf("http://%s/%d", c.Request.Host, request.Id),
+				})
 			}
 		}
 	})

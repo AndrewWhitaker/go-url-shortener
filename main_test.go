@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -28,11 +29,13 @@ func (suite *ApiTestSuite) SetupSuite() {
 		suite.T().Fatal(err)
 	}
 
-	config := ServerConfig{
-		DB: db,
-	}
+	suite.DB = db
 
-	suite.Server = httptest.NewServer(SetupServer(&config))
+	suite.Server = httptest.NewServer(
+		SetupServer(&ServerConfig{
+			DB: db,
+		}),
+	)
 
 	suite.Cleanup = func() {
 		db.Close()
@@ -45,58 +48,113 @@ func (suite *ApiTestSuite) TearDownSuite() {
 	suite.Cleanup()
 }
 
-func (suite *ApiTestSuite) TestCreateWithNewShortUrlReturns201k() {
+func (suite *ApiTestSuite) BeforeTest(suiteName, testName string) {
+	db := suite.DB
 	t := suite.T()
-	testServer := suite.Server
 
-	postBody, err := json.Marshal(map[string]interface{}{
-		"long_url": "https://www.cloudflare.com",
-	})
+	_, err := db.Exec("TRUNCATE TABLE short_urls")
 
 	if err != nil {
-		t.Fatal(err)
+		t.Fatal("Failed to truncate short_urls table:", err)
 	}
 
-	resp, err := http.Post(
-		fmt.Sprintf("%s/shorturls", testServer.URL),
-		"application/json",
-		bytes.NewBuffer(postBody),
-	)
-
-	defer resp.Body.Close()
+	_, err = db.Exec("ALTER SEQUENCE short_urls_id_seq RESTART")
 
 	if err != nil {
-		t.Fatal(err)
+		t.Fatal("Failed to reset short_urls_id_seq", err)
 	}
-
-	suite.Assert().Equal(201, resp.StatusCode)
 }
 
-func (suite *ApiTestSuite) TestCreateWithExistingLongUrlReturns409() {
+func (suite *ApiTestSuite) TestCreateWithNewShortUrlReturns201WithShortUrl() {
 	t := suite.T()
 	testServer := suite.Server
+	assert := suite.Assert()
 
+	// Create first shortened url:
+	result, err := createShortUrl("https://www.cloudflare.com", testServer.URL)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expectedUrl := fmt.Sprintf("%s/1", testServer.URL)
+
+	assert.Equal(201, result.Response.StatusCode)
+	assert.Equal(expectedUrl, result.Data["short_url"])
+}
+
+func (suite *ApiTestSuite) TestCreateWithExistingLongUrlReturns200WithExistingShortUrl() {
+	t := suite.T()
+	testServer := suite.Server
+	assert := suite.Assert()
+
+	// Create first shortened url:
+	result, err := createShortUrl("https://www.cloudflare.com", testServer.URL)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resp := result.Response
+	data := result.Data
+
+	assert.Equal(201, resp.StatusCode, "Failed to create first URL")
+
+	shortUrl := data["short_url"]
+
+	// Create second shortened url, should get a 200 with existing shortened url:
+	result, err = createShortUrl("https://www.cloudflare.com", testServer.URL)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resp = result.Response
+	data = result.Data
+
+	assert.Equal(200, resp.StatusCode)
+	assert.Equal(shortUrl, data["short_url"])
+}
+
+type CreateShortUrlResult struct {
+	Data     map[string]interface{}
+	Response *http.Response
+}
+
+func createShortUrl(longUrl, url string) (*CreateShortUrlResult, error) {
 	postBody, err := json.Marshal(map[string]interface{}{
-		"long_url": "https://www.cloudflare.com",
+		"long_url": longUrl,
 	})
 
 	if err != nil {
-		t.Fatal(err)
+		return nil, err
 	}
 
 	resp, err := http.Post(
-		fmt.Sprintf("%s/shorturls", testServer.URL),
+		fmt.Sprintf("%s/shorturls", url),
 		"application/json",
 		bytes.NewBuffer(postBody),
 	)
-
 	defer resp.Body.Close()
 
+	bytes, err := ioutil.ReadAll(resp.Body)
+
 	if err != nil {
-		t.Fatal(err)
+		return nil, err
 	}
 
-	suite.Assert().Equal(201, resp.StatusCode)
+	var responseBody map[string]interface{}
+
+	err = json.Unmarshal([]byte(bytes), &responseBody)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &CreateShortUrlResult{
+		Data:     responseBody,
+		Response: resp,
+	}, nil
 }
 
 func TestMain(t *testing.T) {
