@@ -1,0 +1,31 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes: 
+      - db:/var/lib/postgresql/data
+  web:
+    build:
+      dockerfile: Dockerfile
+      context: .
+        # https://stackoverflow.com/a/50108745/497356
+    command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; ./url-shortener'
+    ports:
+      - "8080:8080"
+    depends_on:
+      - "db"
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DATABASE=postgres
+volumes:
+  db:
+    driver: local
