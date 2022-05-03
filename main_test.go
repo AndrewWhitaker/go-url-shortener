@@ -24,15 +24,15 @@ func (suite *ApiTestSuite) SetupSuite() {
 	ctx := context.Background()
 	container, db, err := CreateTestContainer(ctx, "testdb")
 
-	config := ServerConfig{
-		DB: suite.DB,
-	}
-
-	suite.Server = httptest.NewServer(SetupServer(&config))
-
 	if err != nil {
 		suite.T().Fatal(err)
 	}
+
+	config := ServerConfig{
+		DB: db,
+	}
+
+	suite.Server = httptest.NewServer(SetupServer(&config))
 
 	suite.Cleanup = func() {
 		db.Close()

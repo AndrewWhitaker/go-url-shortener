@@ -2,12 +2,25 @@ package main
 
 import (
 	"database/sql"
+	"errors"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type ServerConfig struct {
 	DB *sql.DB
+}
+
+type ShortUrl struct {
+	Id        int64  `gorm:"primaryKey"`
+	LongUrl   string `gorm:"index:uq_short_urls_long_url,unique" json:"long_url"`
+	CreatedAt time.Time
 }
 
 func main() {
@@ -18,14 +31,45 @@ func main() {
 func SetupServer(cfg *ServerConfig) *gin.Engine {
 	r := gin.Default()
 
+	gormDb, err := gorm.Open(postgres.New(postgres.Config{
+		Conn: cfg.DB,
+	}), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
+
+	if err != nil {
+		panic("Failed to connect to database")
+	}
+
+	gormDb.AutoMigrate(&ShortUrl{})
+
 	// Access an existing short URL
 	r.GET("/:slug", func(c *gin.Context) {
 		c.Writer.WriteHeader(501)
 	})
 
+	type GormErr struct {
+		Number  int    `json:"Number"`
+		Message string `json:"Message"`
+	}
+
 	// Create a new short URL
 	r.POST("/shorturls", func(c *gin.Context) {
-		c.Writer.WriteHeader(501)
+		var request ShortUrl
+		if c.BindJSON(&request) == nil {
+			// https://github.com/go-gorm/gorm/issues/4037
+			if err := gormDb.Create(&request).Error; err != nil {
+				var pgErr *pgconn.PgError
+
+				if errors.As(err, &pgErr) {
+					if pgErr.Code == pgerrcode.UniqueViolation {
+						c.Writer.WriteHeader(409)
+					}
+				} else {
+					c.Writer.WriteHeader(501)
+				}
+			}
+		}
 	})
 
 	// Get details about an existing short URL

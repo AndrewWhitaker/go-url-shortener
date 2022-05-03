@@ -50,7 +50,7 @@ func CreateTestContainer(ctx context.Context, dbname string) (testcontainers.Con
 
 	url := fmt.Sprintf("postgres://postgres:postgres@localhost:%s/%s?sslmode=disable", mappedPort.Port(), dbname)
 
-	db, err := sql.Open("postgres", url)
+	db, err := sql.Open("pgx", url)
 
 	if err != nil {
 		return container, db, fmt.Errorf("failed to establish database connection: %s", err)
