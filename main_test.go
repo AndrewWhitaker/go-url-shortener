@@ -136,6 +136,26 @@ func (suite *ApiTestSuite) TestCreateWithInvalidJsonReturns400WithErrorMessage()
 	assert.NotNil(errors)
 }
 
+func (suite *ApiTestSuite) TestCreateWithSlugReturns201CreatedWithShortUrl() {
+	t := suite.T()
+	testServer := suite.Server
+	assert := suite.Assert()
+
+	result, err := createShortUrlWithSlug("https://www.cloudflare.com", "cf", testServer.URL)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expectedUrl := fmt.Sprintf("%s/cf", testServer.URL)
+
+	resp := result.Response
+	data := result.Data
+
+	assert.Equal(201, resp.StatusCode)
+	assert.Equal(expectedUrl, data["short_url"])
+}
+
 type CreateShortUrlResult struct {
 	Data     map[string]interface{}
 	Response *http.Response
@@ -144,6 +164,13 @@ type CreateShortUrlResult struct {
 func createShortUrl(longUrl, url string) (*CreateShortUrlResult, error) {
 	return makeCreateRequest(map[string]interface{}{
 		"long_url": longUrl,
+	}, url)
+}
+
+func createShortUrlWithSlug(longUrl, slug, url string) (*CreateShortUrlResult, error) {
+	return makeCreateRequest(map[string]interface{}{
+		"long_url": longUrl,
+		"slug":     slug,
 	}, url)
 }
 

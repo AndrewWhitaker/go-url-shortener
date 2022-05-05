@@ -32,7 +32,7 @@ func main() {
 
 	fmt.Println(url)
 
-	fmt.Println("Connecting to %s", url)
+	fmt.Printf("Connecting to %s\n", url)
 	db, err := sql.Open("pgx", url)
 
 	if err != nil {
