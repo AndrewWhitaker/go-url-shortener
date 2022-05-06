@@ -21,3 +21,30 @@ func ConnectDatabase(sqlDB *sql.DB) (*gorm.DB, error) {
 
 	return db, err
 }
+
+type UniqueConstraintName int
+
+const (
+	None UniqueConstraintName = iota
+	DuplicateLongUrl
+	DuplicateSlug
+)
+
+func (u UniqueConstraintName) String() string {
+	return []string{"uq_short_urls_long_url", "uq_short_urls_slug"}[u]
+}
+
+func ParseString(s string) UniqueConstraintName {
+	constraintsMap := map[string]UniqueConstraintName{
+		"uq_short_urls_long_url": DuplicateLongUrl,
+		"uq_short_urls_slug":     DuplicateSlug,
+	}
+
+	u, ok := constraintsMap[s]
+
+	if !ok {
+		return None
+	}
+
+	return u
+}

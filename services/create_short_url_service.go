@@ -41,11 +41,16 @@ func (s *CreateShortUrlService) Create(request *models.ShortUrl) CreationResult 
 		}
 	}
 
-	if isUniqueConstraintViolation(err) {
-		var existing models.ShortUrl
+	if !isUniqueConstraintViolation(err) {
+		return CreationResult{
+			Error: err,
+		}
+	}
 
-		s.DB.Where(&models.ShortUrl{LongUrl: request.LongUrl}).First(&existing)
+	var existing models.ShortUrl
+	err = s.DB.Where(&models.ShortUrl{LongUrl: request.LongUrl}).First(&existing).Error
 
+	if err != gorm.ErrRecordNotFound {
 		return CreationResult{
 			Status: enums.CreationResultAlreadyExisted,
 			Record: &existing,
@@ -53,7 +58,7 @@ func (s *CreateShortUrlService) Create(request *models.ShortUrl) CreationResult 
 	}
 
 	return CreationResult{
-		Error: err,
+		Status: enums.CreationResultDuplicateSlug,
 	}
 }
 

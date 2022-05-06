@@ -65,7 +65,7 @@ func (suite *ApiTestSuite) BeforeTest(suiteName, testName string) {
 	}
 }
 
-func (suite *ApiTestSuite) TestCreateWithNewShortUrlReturns201WithShortUrl() {
+func (suite *ApiTestSuite) TestPostWithNewShortUrlReturns201WithShortUrl() {
 	t := suite.T()
 	testServer := suite.Server
 	assert := suite.Assert()
@@ -81,7 +81,7 @@ func (suite *ApiTestSuite) TestCreateWithNewShortUrlReturns201WithShortUrl() {
 	assert.Regexp(fmt.Sprintf("%s/[A-Za-z0-9]{8}", testServer.URL), result.Data["short_url"])
 }
 
-func (suite *ApiTestSuite) TestCreateWithExistingLongUrlReturns200WithExistingShortUrl() {
+func (suite *ApiTestSuite) TestPostWithExistingLongUrlReturns200WithExistingShortUrl() {
 	t := suite.T()
 	testServer := suite.Server
 	assert := suite.Assert()
@@ -114,7 +114,34 @@ func (suite *ApiTestSuite) TestCreateWithExistingLongUrlReturns200WithExistingSh
 	assert.Equal(shortUrl, data["short_url"])
 }
 
-func (suite *ApiTestSuite) TestCreateWithInvalidJsonReturns400WithErrorMessage() {
+func (suite *ApiTestSuite) TestPostWithExistingSlugReturns409WithErrorMessage() {
+	t := suite.T()
+	testServer := suite.Server
+	assert := suite.Assert()
+
+	t.Logf("starting test %s", t.Name())
+
+	result, err := createShortUrlWithSlug("https://www.cloudflare.com", "xyz", testServer.URL)
+
+	assert.Equal(201, result.Response.StatusCode)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result, err = createShortUrlWithSlug("https://www.stackoverflow.com", "xyz", testServer.URL)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resp := result.Response
+
+	assert.Equal(409, resp.StatusCode)
+	assert.NotNil(result.Data["errors"])
+}
+
+func (suite *ApiTestSuite) TestPostWithInvalidJsonReturns400WithErrorMessage() {
 	t := suite.T()
 	testServer := suite.Server
 	assert := suite.Assert()
@@ -134,7 +161,7 @@ func (suite *ApiTestSuite) TestCreateWithInvalidJsonReturns400WithErrorMessage()
 	assert.NotNil(errors)
 }
 
-func (suite *ApiTestSuite) TestCreateWithSlugReturns201CreatedWithShortUrl() {
+func (suite *ApiTestSuite) TestPostWithSlugReturns201CreatedWithShortUrl() {
 	t := suite.T()
 	testServer := suite.Server
 	assert := suite.Assert()
@@ -152,6 +179,59 @@ func (suite *ApiTestSuite) TestCreateWithSlugReturns201CreatedWithShortUrl() {
 
 	assert.Equal(201, resp.StatusCode)
 	assert.Equal(expectedUrl, data["short_url"])
+}
+
+func (suite *ApiTestSuite) TestGetWithValidSlugReturns301WithLongUrl() {
+	t := suite.T()
+	testServer := suite.Server
+	assert := suite.Assert()
+
+	// Create initial short URL
+	result, err := createShortUrl("https://www.google.com", testServer.URL)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(201, result.Response.StatusCode)
+
+	// Issue GET to make sure we're redirected properly
+	// https://stackoverflow.com/questions/23297520/how-can-i-make-the-go-http-client-not-follow-redirects-automatically
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+	resp, err := client.Get(fmt.Sprintf("%v", result.Data["short_url"]))
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	header := resp.Header
+
+	assert.Equal(301, resp.StatusCode)
+	assert.Equal("https://www.google.com", header.Get("Location"))
+	assert.Equal("private,max-age=0", header.Get("Cache-Control"))
+}
+
+func (suite *ApiTestSuite) TestGetWithInvalidSlugReturns404() {
+	assert := suite.Assert()
+	t := suite.T()
+
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+
+	resp, err := client.Get(fmt.Sprintf("%s/invalid", suite.Server.URL))
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(404, resp.StatusCode)
 }
 
 type CreateShortUrlResult struct {

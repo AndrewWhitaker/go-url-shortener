@@ -50,17 +50,21 @@ func (controller *ShortUrlController) CreateShortUrl(c *gin.Context) {
 
 	if createResult := controller.CreateShortUrlService.Create(&request); createResult.Error == nil {
 		var status int
+		var body map[string]interface{}
 
 		switch createResult.Status {
 		case enums.CreationResultCreated:
 			status = http.StatusCreated
+			body = gin.H{"short_url": fmt.Sprintf("http://%s/%s", c.Request.Host, createResult.Record.Slug)}
 		case enums.CreationResultAlreadyExisted:
 			status = http.StatusOK
+			body = gin.H{"short_url": fmt.Sprintf("http://%s/%s", c.Request.Host, createResult.Record.Slug)}
+		case enums.CreationResultDuplicateSlug:
+			status = http.StatusConflict
+			body = gin.H{"errors": []gin.H{gin.H{"field": "Slug", "reason": "must be unique"}}}
 		}
 
-		c.JSON(status, gin.H{
-			"short_url": fmt.Sprintf("http://%s/%s", c.Request.Host, createResult.Record.Slug),
-		})
+		c.JSON(status, body)
 	} else {
 		c.Writer.WriteHeader(http.StatusNotImplemented)
 	}
