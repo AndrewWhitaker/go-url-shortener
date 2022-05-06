@@ -36,6 +36,9 @@ func (controller *ShortUrlController) CreateShortUrl(c *gin.Context) {
 	var request models.ShortUrl
 	var err error
 
+	// TODO:
+	// * Look into custom binding for "slug"
+	// * Refactor into generic handler
 	if err = c.ShouldBindJSON(&request); err != nil {
 		var verr validator.ValidationErrors
 

@@ -6,4 +6,5 @@ const (
 	CreationResultUnknown CreationStatus = iota
 	CreationResultCreated
 	CreationResultAlreadyExisted
+	CreationResultInvalidId
 )

@@ -21,6 +21,17 @@ type CreationResult struct {
 }
 
 func (s *CreateShortUrlService) Create(request *models.ShortUrl) CreationResult {
+	if request.Slug == "" {
+		randomSlug, err := GenerateSlug()
+
+		if err != nil {
+			return CreationResult{
+				Error: err,
+			}
+		}
+		request.Slug = randomSlug
+	}
+
 	err := s.DB.Create(&request).Error
 
 	if err == nil {

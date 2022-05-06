@@ -77,10 +77,8 @@ func (suite *ApiTestSuite) TestCreateWithNewShortUrlReturns201WithShortUrl() {
 		t.Fatal(err)
 	}
 
-	expectedUrl := fmt.Sprintf("%s/1", testServer.URL)
-
 	assert.Equal(201, result.Response.StatusCode)
-	assert.Equal(expectedUrl, result.Data["short_url"])
+	assert.Regexp(fmt.Sprintf("%s/[A-Za-z0-9]{8}", testServer.URL), result.Data["short_url"])
 }
 
 func (suite *ApiTestSuite) TestCreateWithExistingLongUrlReturns200WithExistingShortUrl() {
