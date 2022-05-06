@@ -54,11 +54,7 @@ func SetupServer(cfg *ServerConfig) *gin.Engine {
 	shortUrlController := controllers.NewShortUrlController(db)
 
 	// Access an existing short URL
-	r.GET("/:slug", func(c *gin.Context) {
-		c.Writer.WriteHeader(501)
-	})
-
-	// Create a new short URL
+	r.GET("/:slug", shortUrlController.GetShortUrl)
 	r.POST("/shorturls", shortUrlController.CreateShortUrl)
 
 	// Get details about an existing short URL

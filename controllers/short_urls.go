@@ -36,9 +36,6 @@ func (controller *ShortUrlController) CreateShortUrl(c *gin.Context) {
 	var request models.ShortUrl
 	var err error
 
-	// TODO:
-	// * Look into custom binding for "slug"
-	// * Refactor into generic handler
 	if err = c.ShouldBindJSON(&request); err != nil {
 		var verr validator.ValidationErrors
 
@@ -67,4 +64,29 @@ func (controller *ShortUrlController) CreateShortUrl(c *gin.Context) {
 	} else {
 		c.Writer.WriteHeader(http.StatusNotImplemented)
 	}
+}
+
+func (controller *ShortUrlController) GetShortUrl(c *gin.Context) {
+	slug := c.Param("slug")
+
+	var shortUrl models.ShortUrl
+
+	err := controller.DB.
+		Where(&models.ShortUrl{Slug: slug}).
+		First(&shortUrl).Error
+
+	if err == nil {
+		c.Writer.Header().Set("Location", shortUrl.LongUrl)
+		c.Writer.Header().Set("Cache-Control", "private,max-age=0")
+		c.Writer.WriteHeader(http.StatusMovedPermanently)
+		return
+	}
+
+	status := http.StatusInternalServerError
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		status = http.StatusNotFound
+	}
+
+	c.Writer.WriteHeader(status)
 }
