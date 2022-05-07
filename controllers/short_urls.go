@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"url-shortener/e"
 	"url-shortener/enums"
 	"url-shortener/models"
 	"url-shortener/services"
@@ -17,12 +18,16 @@ import (
 type ShortUrlController struct {
 	DB                    *gorm.DB
 	CreateShortUrlService *services.CreateShortUrlService
+	DeleteShortUrlService *services.DeleteShortUrlService
 }
 
 func NewShortUrlController(db *gorm.DB) *ShortUrlController {
 	return &ShortUrlController{
 		DB: db,
 		CreateShortUrlService: &services.CreateShortUrlService{
+			DB: db,
+		},
+		DeleteShortUrlService: &services.DeleteShortUrlService{
 			DB: db,
 		},
 	}
@@ -40,7 +45,9 @@ func (controller *ShortUrlController) CreateShortUrl(c *gin.Context) {
 		var verr validator.ValidationErrors
 
 		if errors.As(err, &verr) {
-			c.JSON(http.StatusBadRequest, gin.H{"errors": FormatErrors(verr)})
+			c.JSON(http.StatusBadRequest, e.ErrorResponse{
+				Errors: e.FormatErrors(verr),
+			})
 		} else {
 			c.Writer.WriteHeader(http.StatusBadRequest)
 		}
@@ -50,7 +57,7 @@ func (controller *ShortUrlController) CreateShortUrl(c *gin.Context) {
 
 	if createResult := controller.CreateShortUrlService.Create(&request); createResult.Error == nil {
 		var status int
-		var body map[string]interface{}
+		var body interface{}
 
 		switch createResult.Status {
 		case enums.CreationResultCreated:
@@ -61,7 +68,14 @@ func (controller *ShortUrlController) CreateShortUrl(c *gin.Context) {
 			body = gin.H{"short_url": fmt.Sprintf("http://%s/%s", c.Request.Host, createResult.Record.Slug)}
 		case enums.CreationResultDuplicateSlug:
 			status = http.StatusConflict
-			body = gin.H{"errors": []gin.H{gin.H{"field": "Slug", "reason": "must be unique"}}}
+			body = e.ErrorResponse{
+				Errors: []e.ValidationError{
+					e.ValidationError{
+						Field:  "Slug",
+						Reason: "must be unique",
+					},
+				},
+			}
 		}
 
 		c.JSON(status, body)
@@ -98,20 +112,20 @@ func (controller *ShortUrlController) GetShortUrl(c *gin.Context) {
 func (controller *ShortUrlController) DeleteShortUrl(c *gin.Context) {
 	slug := c.Param("slug")
 
-	var shortUrl models.ShortUrl
+	result := controller.DeleteShortUrlService.Delete(slug)
 
-	res := controller.DB.
-		Where(&models.ShortUrl{Slug: slug}).
-		Delete(&shortUrl)
-
-	if res.Error == nil {
-		if res.RowsAffected == 1 {
-			c.Writer.WriteHeader(http.StatusNoContent)
-		} else {
-			c.Writer.WriteHeader(http.StatusNotFound)
-		}
-		return
+	if result.Status == enums.DeleteResultSuccessful {
+		c.Writer.WriteHeader(http.StatusNoContent)
+	} else if result.Status == enums.DeleteResultNotFound {
+		c.JSON(http.StatusNotFound, e.ErrorResponse{
+			Errors: []e.ValidationError{
+				e.ValidationError{
+					Field:  "Slug",
+					Reason: "not found",
+				},
+			},
+		})
+	} else {
+		c.Writer.WriteHeader(http.StatusInternalServerError)
 	}
-
-	c.Writer.WriteHeader(http.StatusInternalServerError)
 }

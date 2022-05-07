@@ -1,6 +1,4 @@
-// https://blog.depa.do/post/gin-validation-errors-handling
-// https://github.com/go-playground/validator/issues/258#issuecomment-257266610
-package controllers
+package e
 
 import (
 	"fmt"

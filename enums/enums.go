@@ -9,3 +9,12 @@ const (
 	CreationResultDuplicateSlug
 	CreationResultUnknownError
 )
+
+type DeleteStatus int
+
+const (
+	DeleteResultUnknown DeleteStatus = iota
+	DeleteResultSuccessful
+	DeleteResultNotFound
+	DeleteResultUnknownError
+)

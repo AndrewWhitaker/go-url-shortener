@@ -15,6 +15,13 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+type ErrorResponse struct {
+	Errors []struct {
+		Field  string `json:"field"`
+		Reason string `json:"reason"`
+	} `json:"errors"`
+}
+
 type apiTestSuite struct {
 	suite.Suite
 	db      *sql.DB
@@ -292,12 +299,27 @@ func (suite *apiTestSuite) TestDeleteWithInvalidSlugReturns404() {
 	client := &http.Client{}
 
 	resp, err := client.Do(req)
+	defer resp.Body.Close()
+
+	bytes, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fmt.Printf("RESPONSE: %s\n", string(bytes))
+
+	var jsonErrors ErrorResponse
+
+	err = json.Unmarshal(bytes, &jsonErrors)
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	assert.Equal(404, resp.StatusCode)
+	assert.Equal(jsonErrors.Errors[0].Field, "Slug")
+	assert.Equal(jsonErrors.Errors[0].Reason, "not found")
 }
 
 type createShortUrlResult struct {
