@@ -15,14 +15,14 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type ApiTestSuite struct {
+type apiTestSuite struct {
 	suite.Suite
-	*sql.DB
-	*httptest.Server
-	Cleanup func()
+	db      *sql.DB
+	server  *httptest.Server
+	cleanup func()
 }
 
-func (suite *ApiTestSuite) SetupSuite() {
+func (suite *apiTestSuite) SetupSuite() {
 	ctx := context.Background()
 	container, db, err := CreateTestContainer(ctx, "testdb")
 
@@ -30,27 +30,27 @@ func (suite *ApiTestSuite) SetupSuite() {
 		suite.T().Fatal(err)
 	}
 
-	suite.DB = db
+	suite.db = db
 
-	suite.Server = httptest.NewServer(
+	suite.server = httptest.NewServer(
 		SetupServer(&ServerConfig{
 			DB: db,
 		}),
 	)
 
-	suite.Cleanup = func() {
+	suite.cleanup = func() {
 		db.Close()
 		container.Terminate(ctx)
-		suite.Server.Close()
+		suite.server.Close()
 	}
 }
 
-func (suite *ApiTestSuite) TearDownSuite() {
-	suite.Cleanup()
+func (suite *apiTestSuite) TearDownSuite() {
+	suite.cleanup()
 }
 
-func (suite *ApiTestSuite) BeforeTest(suiteName, testName string) {
-	db := suite.DB
+func (suite *apiTestSuite) BeforeTest(suiteName, testName string) {
+	db := suite.db
 	t := suite.T()
 
 	_, err := db.Exec("TRUNCATE TABLE short_urls")
@@ -66,9 +66,9 @@ func (suite *ApiTestSuite) BeforeTest(suiteName, testName string) {
 	}
 }
 
-func (suite *ApiTestSuite) TestPostWithNewShortUrlReturns201WithShortUrl() {
+func (suite *apiTestSuite) TestPostWithNewShortUrlReturns201WithShortUrl() {
 	t := suite.T()
-	testServer := suite.Server
+	testServer := suite.server
 	assert := suite.Assert()
 
 	// Create first shortened url:
@@ -78,13 +78,13 @@ func (suite *ApiTestSuite) TestPostWithNewShortUrlReturns201WithShortUrl() {
 		t.Fatal(err)
 	}
 
-	assert.Equal(201, result.Response.StatusCode)
-	assert.Regexp(fmt.Sprintf("%s/[A-Za-z0-9]{8}", testServer.URL), result.Data["short_url"])
+	assert.Equal(201, result.response.StatusCode)
+	assert.Regexp(fmt.Sprintf("%s/[A-Za-z0-9]{8}", testServer.URL), result.data["short_url"])
 }
 
-func (suite *ApiTestSuite) TestPostWithExistingLongUrlReturns200WithExistingShortUrl() {
+func (suite *apiTestSuite) TestPostWithExistingLongUrlReturns200WithExistingShortUrl() {
 	t := suite.T()
-	testServer := suite.Server
+	testServer := suite.server
 	assert := suite.Assert()
 
 	// Create first shortened url:
@@ -94,8 +94,8 @@ func (suite *ApiTestSuite) TestPostWithExistingLongUrlReturns200WithExistingShor
 		t.Fatal(err)
 	}
 
-	resp := result.Response
-	data := result.Data
+	resp := result.response
+	data := result.data
 
 	assert.Equal(201, resp.StatusCode, "Failed to create first URL")
 
@@ -108,23 +108,23 @@ func (suite *ApiTestSuite) TestPostWithExistingLongUrlReturns200WithExistingShor
 		t.Fatal(err)
 	}
 
-	resp = result.Response
-	data = result.Data
+	resp = result.response
+	data = result.data
 
 	assert.Equal(200, resp.StatusCode)
 	assert.Equal(shortUrl, data["short_url"])
 }
 
-func (suite *ApiTestSuite) TestPostWithExistingSlugReturns409WithErrorMessage() {
+func (suite *apiTestSuite) TestPostWithExistingSlugReturns409WithErrorMessage() {
 	t := suite.T()
-	testServer := suite.Server
+	testServer := suite.server
 	assert := suite.Assert()
 
 	t.Logf("starting test %s", t.Name())
 
 	result, err := createShortUrlWithSlug("https://www.cloudflare.com", "xyz", testServer.URL)
 
-	assert.Equal(201, result.Response.StatusCode)
+	assert.Equal(201, result.response.StatusCode)
 
 	if err != nil {
 		t.Fatal(err)
@@ -136,15 +136,15 @@ func (suite *ApiTestSuite) TestPostWithExistingSlugReturns409WithErrorMessage() 
 		t.Fatal(err)
 	}
 
-	resp := result.Response
+	resp := result.response
 
 	assert.Equal(409, resp.StatusCode)
-	assert.NotNil(result.Data["errors"])
+	assert.NotNil(result.data["errors"])
 }
 
-func (suite *ApiTestSuite) TestPostWithInvalidJsonReturns400WithErrorMessage() {
+func (suite *apiTestSuite) TestPostWithInvalidJsonReturns400WithErrorMessage() {
 	t := suite.T()
-	testServer := suite.Server
+	testServer := suite.server
 	assert := suite.Assert()
 
 	result, err := makeCreateRequest(map[string]interface{}{
@@ -155,16 +155,16 @@ func (suite *ApiTestSuite) TestPostWithInvalidJsonReturns400WithErrorMessage() {
 		t.Fatal(err)
 	}
 
-	assert.Equal(400, result.Response.StatusCode)
+	assert.Equal(400, result.response.StatusCode)
 
-	errors := result.Data["errors"]
+	errors := result.data["errors"]
 
 	assert.NotNil(errors)
 }
 
-func (suite *ApiTestSuite) TestPostWithSlugReturns201CreatedWithShortUrl() {
+func (suite *apiTestSuite) TestPostWithSlugReturns201CreatedWithShortUrl() {
 	t := suite.T()
-	testServer := suite.Server
+	testServer := suite.server
 	assert := suite.Assert()
 
 	result, err := createShortUrlWithSlug("https://www.cloudflare.com", "cf", testServer.URL)
@@ -175,16 +175,16 @@ func (suite *ApiTestSuite) TestPostWithSlugReturns201CreatedWithShortUrl() {
 
 	expectedUrl := fmt.Sprintf("%s/cf", testServer.URL)
 
-	resp := result.Response
-	data := result.Data
+	resp := result.response
+	data := result.data
 
 	assert.Equal(201, resp.StatusCode)
 	assert.Equal(expectedUrl, data["short_url"])
 }
 
-func (suite *ApiTestSuite) TestGetWithValidSlugReturns301WithLongUrl() {
+func (suite *apiTestSuite) TestGetWithValidSlugReturns301WithLongUrl() {
 	t := suite.T()
-	testServer := suite.Server
+	testServer := suite.server
 	assert := suite.Assert()
 
 	// Create initial short URL
@@ -194,7 +194,7 @@ func (suite *ApiTestSuite) TestGetWithValidSlugReturns301WithLongUrl() {
 		t.Fatal(err)
 	}
 
-	assert.Equal(201, result.Response.StatusCode)
+	assert.Equal(201, result.response.StatusCode)
 
 	// Issue GET to make sure we're redirected properly
 	// https://stackoverflow.com/questions/23297520/how-can-i-make-the-go-http-client-not-follow-redirects-automatically
@@ -203,7 +203,7 @@ func (suite *ApiTestSuite) TestGetWithValidSlugReturns301WithLongUrl() {
 			return http.ErrUseLastResponse
 		},
 	}
-	resp, err := client.Get(fmt.Sprintf("%s", result.Data["short_url"]))
+	resp, err := client.Get(fmt.Sprintf("%s", result.data["short_url"]))
 
 	if err != nil {
 		t.Fatal(err)
@@ -216,7 +216,7 @@ func (suite *ApiTestSuite) TestGetWithValidSlugReturns301WithLongUrl() {
 	assert.Equal("private,max-age=0", header.Get("Cache-Control"))
 }
 
-func (suite *ApiTestSuite) TestGetWithInvalidSlugReturns404() {
+func (suite *apiTestSuite) TestGetWithInvalidSlugReturns404() {
 	assert := suite.Assert()
 	t := suite.T()
 
@@ -226,7 +226,7 @@ func (suite *ApiTestSuite) TestGetWithInvalidSlugReturns404() {
 		},
 	}
 
-	resp, err := client.Get(fmt.Sprintf("%s/invalid", suite.Server.URL))
+	resp, err := client.Get(fmt.Sprintf("%s/invalid", suite.server.URL))
 
 	if err != nil {
 		t.Fatal(err)
@@ -235,9 +235,9 @@ func (suite *ApiTestSuite) TestGetWithInvalidSlugReturns404() {
 	assert.Equal(404, resp.StatusCode)
 }
 
-func (suite *ApiTestSuite) TestDeleteWithValidSlugReturns204() {
+func (suite *apiTestSuite) TestDeleteWithValidSlugReturns204() {
 	t := suite.T()
-	testServer := suite.Server
+	testServer := suite.server
 	assert := suite.Assert()
 
 	// Create initial short URL
@@ -247,9 +247,9 @@ func (suite *ApiTestSuite) TestDeleteWithValidSlugReturns204() {
 		t.Fatal(err)
 	}
 
-	assert.Equal(201, result.Response.StatusCode)
+	assert.Equal(201, result.response.StatusCode)
 
-	shortUrl := result.Data["short_url"]
+	shortUrl := result.data["short_url"]
 
 	u, err := url.Parse(fmt.Sprintf("%v", shortUrl))
 
@@ -276,9 +276,9 @@ func (suite *ApiTestSuite) TestDeleteWithValidSlugReturns204() {
 	assert.Equal(204, resp.StatusCode)
 }
 
-func (suite *ApiTestSuite) TestDeleteWithInvalidSlugReturns404() {
+func (suite *apiTestSuite) TestDeleteWithInvalidSlugReturns404() {
 	t := suite.T()
-	testServer := suite.Server
+	testServer := suite.server
 	assert := suite.Assert()
 
 	req, err := http.NewRequest(
@@ -300,25 +300,25 @@ func (suite *ApiTestSuite) TestDeleteWithInvalidSlugReturns404() {
 	assert.Equal(404, resp.StatusCode)
 }
 
-type CreateShortUrlResult struct {
-	Data     map[string]interface{}
-	Response *http.Response
+type createShortUrlResult struct {
+	data     map[string]interface{}
+	response *http.Response
 }
 
-func createShortUrl(longUrl, url string) (*CreateShortUrlResult, error) {
+func createShortUrl(longUrl, url string) (*createShortUrlResult, error) {
 	return makeCreateRequest(map[string]interface{}{
 		"long_url": longUrl,
 	}, url)
 }
 
-func createShortUrlWithSlug(longUrl, slug, url string) (*CreateShortUrlResult, error) {
+func createShortUrlWithSlug(longUrl, slug, url string) (*createShortUrlResult, error) {
 	return makeCreateRequest(map[string]interface{}{
 		"long_url": longUrl,
 		"slug":     slug,
 	}, url)
 }
 
-func makeCreateRequest(data map[string]interface{}, url string) (*CreateShortUrlResult, error) {
+func makeCreateRequest(data map[string]interface{}, url string) (*createShortUrlResult, error) {
 	postBody, err := json.Marshal(data)
 
 	if err != nil {
@@ -348,12 +348,12 @@ func makeCreateRequest(data map[string]interface{}, url string) (*CreateShortUrl
 		return nil, err
 	}
 
-	return &CreateShortUrlResult{
-		Data:     responseBody,
-		Response: resp,
+	return &createShortUrlResult{
+		data:     responseBody,
+		response: resp,
 	}, nil
 }
 
 func TestMain(t *testing.T) {
-	suite.Run(t, new(ApiTestSuite))
+	suite.Run(t, new(apiTestSuite))
 }
