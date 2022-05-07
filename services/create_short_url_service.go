@@ -48,17 +48,26 @@ func (s *CreateShortUrlService) Create(request *models.ShortUrl) CreationResult 
 	}
 
 	var existing models.ShortUrl
-	err = s.DB.Where(&models.ShortUrl{LongUrl: request.LongUrl}).First(&existing).Error
 
-	if err != gorm.ErrRecordNotFound {
+	err = s.DB.
+		Where(&models.ShortUrl{LongUrl: request.LongUrl}).
+		First(&existing).Error
+
+	if err == nil {
 		return CreationResult{
-			Status: enums.CreationResultAlreadyExisted,
+			Status: enums.CreationResultAlreadyExists,
 			Record: &existing,
 		}
 	}
 
+	if err == gorm.ErrRecordNotFound {
+		return CreationResult{
+			Status: enums.CreationResultDuplicateSlug,
+		}
+	}
+
 	return CreationResult{
-		Status: enums.CreationResultDuplicateSlug,
+		Status: enums.CreationResultUnknownError,
 	}
 }
 

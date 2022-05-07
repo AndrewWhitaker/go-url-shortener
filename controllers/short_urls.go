@@ -56,7 +56,7 @@ func (controller *ShortUrlController) CreateShortUrl(c *gin.Context) {
 		case enums.CreationResultCreated:
 			status = http.StatusCreated
 			body = gin.H{"short_url": fmt.Sprintf("http://%s/%s", c.Request.Host, createResult.Record.Slug)}
-		case enums.CreationResultAlreadyExisted:
+		case enums.CreationResultAlreadyExists:
 			status = http.StatusOK
 			body = gin.H{"short_url": fmt.Sprintf("http://%s/%s", c.Request.Host, createResult.Record.Slug)}
 		case enums.CreationResultDuplicateSlug:

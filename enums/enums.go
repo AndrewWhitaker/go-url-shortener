@@ -5,6 +5,7 @@ type CreationStatus int
 const (
 	CreationResultUnknown CreationStatus = iota
 	CreationResultCreated
-	CreationResultAlreadyExisted
+	CreationResultAlreadyExists
 	CreationResultDuplicateSlug
+	CreationResultUnknownError
 )
