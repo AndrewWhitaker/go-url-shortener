@@ -56,14 +56,10 @@ func SetupServer(cfg *ServerConfig) *gin.Engine {
 	// Access an existing short URL
 	r.GET("/:slug", shortUrlController.GetShortUrl)
 	r.POST("/shorturls", shortUrlController.CreateShortUrl)
+	r.DELETE("/shorturls/:slug", shortUrlController.DeleteShortUrl)
 
 	// Get details about an existing short URL
 	r.GET("/shorturls/:slug", func(c *gin.Context) {
-		c.Writer.WriteHeader(501)
-	})
-
-	// Delete a short url
-	r.DELETE("/shorturls/:slug", func(c *gin.Context) {
 		c.Writer.WriteHeader(501)
 	})
 

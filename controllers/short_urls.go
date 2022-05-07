@@ -94,3 +94,24 @@ func (controller *ShortUrlController) GetShortUrl(c *gin.Context) {
 
 	c.Writer.WriteHeader(status)
 }
+
+func (controller *ShortUrlController) DeleteShortUrl(c *gin.Context) {
+	slug := c.Param("slug")
+
+	var shortUrl models.ShortUrl
+
+	res := controller.DB.
+		Where(&models.ShortUrl{Slug: slug}).
+		Delete(&shortUrl)
+
+	if res.Error == nil {
+		if res.RowsAffected == 1 {
+			c.Writer.WriteHeader(http.StatusNoContent)
+		} else {
+			c.Writer.WriteHeader(http.StatusNotFound)
+		}
+		return
+	}
+
+	c.Writer.WriteHeader(http.StatusInternalServerError)
+}

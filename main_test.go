@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -202,7 +203,7 @@ func (suite *ApiTestSuite) TestGetWithValidSlugReturns301WithLongUrl() {
 			return http.ErrUseLastResponse
 		},
 	}
-	resp, err := client.Get(fmt.Sprintf("%v", result.Data["short_url"]))
+	resp, err := client.Get(fmt.Sprintf("%s", result.Data["short_url"]))
 
 	if err != nil {
 		t.Fatal(err)
@@ -226,6 +227,71 @@ func (suite *ApiTestSuite) TestGetWithInvalidSlugReturns404() {
 	}
 
 	resp, err := client.Get(fmt.Sprintf("%s/invalid", suite.Server.URL))
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(404, resp.StatusCode)
+}
+
+func (suite *ApiTestSuite) TestDeleteWithValidSlugReturns204() {
+	t := suite.T()
+	testServer := suite.Server
+	assert := suite.Assert()
+
+	// Create initial short URL
+	result, err := createShortUrl("https://www.netflix.com", testServer.URL)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(201, result.Response.StatusCode)
+
+	shortUrl := result.Data["short_url"]
+
+	u, err := url.Parse(fmt.Sprintf("%v", shortUrl))
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req, err := http.NewRequest(
+		http.MethodDelete, fmt.Sprintf("%s/shorturls%s", testServer.URL, u.Path), nil,
+	)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	client := &http.Client{}
+
+	resp, err := client.Do(req)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(204, resp.StatusCode)
+}
+
+func (suite *ApiTestSuite) TestDeleteWithInvalidSlugReturns404() {
+	t := suite.T()
+	testServer := suite.Server
+	assert := suite.Assert()
+
+	req, err := http.NewRequest(
+		http.MethodDelete, fmt.Sprintf("%s/shorturls/invalid", testServer.URL), nil,
+	)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	client := &http.Client{}
+
+	resp, err := client.Do(req)
 
 	if err != nil {
 		t.Fatal(err)
