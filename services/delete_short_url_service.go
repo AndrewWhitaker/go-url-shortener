@@ -34,6 +34,7 @@ func (s *DeleteShortUrlService) Delete(slug string) DeleteResult {
 		}
 	} else {
 		response.Status = enums.DeleteResultUnknownError
+		response.Error = res.Error
 	}
 
 	return response

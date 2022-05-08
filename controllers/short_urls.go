@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"url-shortener/e"
@@ -11,7 +10,6 @@ import (
 	"url-shortener/services"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
 )
 
@@ -30,57 +28,6 @@ func NewShortUrlController(db *gorm.DB) *ShortUrlController {
 		DeleteShortUrlService: &services.DeleteShortUrlService{
 			DB: db,
 		},
-	}
-}
-
-type CreateResponse struct {
-	ShortUrl string `json:"short_url"`
-}
-
-func (controller *ShortUrlController) CreateShortUrl(c *gin.Context) {
-	var request models.ShortUrl
-	var err error
-
-	if err = c.ShouldBindJSON(&request); err != nil {
-		var verr validator.ValidationErrors
-
-		if errors.As(err, &verr) {
-			c.JSON(http.StatusBadRequest, e.ErrorResponse{
-				Errors: e.FormatErrors(verr),
-			})
-		} else {
-			c.Writer.WriteHeader(http.StatusBadRequest)
-		}
-
-		return
-	}
-
-	if createResult := controller.CreateShortUrlService.Create(&request); createResult.Error == nil {
-		var status int
-		var body interface{}
-
-		switch createResult.Status {
-		case enums.CreationResultCreated:
-			status = http.StatusCreated
-			body = gin.H{"short_url": fmt.Sprintf("http://%s/%s", c.Request.Host, createResult.Record.Slug)}
-		case enums.CreationResultAlreadyExists:
-			status = http.StatusOK
-			body = gin.H{"short_url": fmt.Sprintf("http://%s/%s", c.Request.Host, createResult.Record.Slug)}
-		case enums.CreationResultDuplicateSlug:
-			status = http.StatusConflict
-			body = e.ErrorResponse{
-				Errors: []e.ValidationError{
-					e.ValidationError{
-						Field:  "Slug",
-						Reason: "must be unique",
-					},
-				},
-			}
-		}
-
-		c.JSON(status, body)
-	} else {
-		c.Writer.WriteHeader(http.StatusNotImplemented)
 	}
 }
 

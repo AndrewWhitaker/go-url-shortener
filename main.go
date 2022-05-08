@@ -6,6 +6,9 @@ import (
 	"os"
 	"url-shortener/controllers"
 	"url-shortener/db"
+	"url-shortener/middleware"
+	"url-shortener/models"
+	"url-shortener/services"
 
 	"github.com/gin-gonic/gin"
 )
@@ -52,11 +55,17 @@ func SetupServer(cfg *ServerConfig) *gin.Engine {
 	}
 
 	shortUrlController := controllers.NewShortUrlController(db)
+	createShortUrlController := &controllers.CreateShortUrlController{
+		CreateShortUrlService: &services.CreateShortUrlService{DB: db},
+	}
+	deleteShortUrlController := &controllers.DeleteShortUrlController{
+		DeleteShortUrlService: &services.DeleteShortUrlService{DB: db},
+	}
 
 	// Access an existing short URL
 	r.GET("/:slug", shortUrlController.GetShortUrl)
-	r.POST("/shorturls", shortUrlController.CreateShortUrl)
-	r.DELETE("/shorturls/:slug", shortUrlController.DeleteShortUrl)
+	r.POST("/shorturls", middleware.ModelBindingWrapper[models.ShortUrl](createShortUrlController))
+	r.DELETE("/shorturls/:slug", deleteShortUrlController.HandleRequest)
 
 	// Get details about an existing short URL
 	r.GET("/shorturls/:slug", func(c *gin.Context) {
