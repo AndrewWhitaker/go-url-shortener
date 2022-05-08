@@ -1,4 +1,4 @@
-package controllers
+package shorturls
 
 import (
 	"encoding/json"
@@ -6,15 +6,14 @@ import (
 	"net/url"
 	"url-shortener/e"
 	"url-shortener/enums"
+	"url-shortener/middleware"
 	"url-shortener/models"
 	"url-shortener/services"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 type CreateShortUrlController struct {
-	DB                    *gorm.DB
 	CreateShortUrlService *services.CreateShortUrlService
 }
 
@@ -55,6 +54,10 @@ func (controller *CreateShortUrlController) HandleRequest(c *gin.Context, reques
 	}
 
 	c.JSON(status, body)
+}
+
+func (controller *CreateShortUrlController) Register(r *gin.Engine) {
+	r.POST("/api/v1/shorturls", middleware.ModelBindingWrapper[models.ShortUrl](controller))
 }
 
 type CreateShortUrlResponse struct {

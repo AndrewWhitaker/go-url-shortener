@@ -1,4 +1,4 @@
-package controllers
+package shorturls
 
 import (
 	"net/http"
@@ -39,4 +39,8 @@ func (controller *DeleteShortUrlController) HandleRequest(c *gin.Context) {
 	default:
 		c.Writer.WriteHeader(http.StatusInternalServerError)
 	}
+}
+
+func (controller *DeleteShortUrlController) Register(r *gin.Engine) {
+	r.DELETE("/api/v1/shorturls/:slug", controller.HandleRequest)
 }

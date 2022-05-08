@@ -265,7 +265,7 @@ func (suite *apiTestSuite) TestDeleteWithValidSlugReturns204() {
 	}
 
 	req, err := http.NewRequest(
-		http.MethodDelete, fmt.Sprintf("%s/shorturls%s", testServer.URL, u.Path), nil,
+		http.MethodDelete, fmt.Sprintf("%s/api/v1/shorturls%s", testServer.URL, u.Path), nil,
 	)
 
 	if err != nil {
@@ -289,7 +289,7 @@ func (suite *apiTestSuite) TestDeleteWithInvalidSlugReturns404() {
 	assert := suite.Assert()
 
 	req, err := http.NewRequest(
-		http.MethodDelete, fmt.Sprintf("%s/shorturls/invalid", testServer.URL), nil,
+		http.MethodDelete, fmt.Sprintf("%s/api/v1/shorturls/invalid", testServer.URL), nil,
 	)
 
 	if err != nil {
@@ -340,18 +340,26 @@ func createShortUrlWithSlug(longUrl, slug, url string) (*createShortUrlResult, e
 	}, url)
 }
 
-func makeCreateRequest(data map[string]interface{}, url string) (*createShortUrlResult, error) {
+func makeCreateRequest(data map[string]interface{}, host string) (*createShortUrlResult, error) {
 	postBody, err := json.Marshal(data)
 
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := http.Post(
-		fmt.Sprintf("%s/shorturls", url),
-		"application/json",
-		bytes.NewBuffer(postBody),
-	)
+	u, err := url.Parse(host)
+
+	if err != nil {
+		return nil, err
+	}
+
+	u.Path = "/api/v1/shorturls"
+
+	resp, err := http.Post(u.String(), "application/json", bytes.NewBuffer(postBody))
+	if err != nil {
+		return nil, err
+	}
+
 	defer resp.Body.Close()
 
 	bytes, err := ioutil.ReadAll(resp.Body)

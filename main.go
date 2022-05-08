@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"os"
 	"url-shortener/controllers"
+	"url-shortener/controllers/api/v1/shorturls"
 	"url-shortener/db"
-	"url-shortener/middleware"
-	"url-shortener/models"
 	"url-shortener/services"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type ServerConfig struct {
@@ -47,30 +47,42 @@ func main() {
 }
 
 func SetupServer(cfg *ServerConfig) *gin.Engine {
-	r := gin.Default()
 	db, err := db.ConnectDatabase(cfg.DB)
 
 	if err != nil {
 		panic("Failed to connect to database")
 	}
 
-	shortUrlController := controllers.NewShortUrlController(db)
-	createShortUrlController := &controllers.CreateShortUrlController{
-		CreateShortUrlService: &services.CreateShortUrlService{DB: db},
-	}
-	deleteShortUrlController := &controllers.DeleteShortUrlController{
-		DeleteShortUrlService: &services.DeleteShortUrlService{DB: db},
-	}
+	r := gin.Default()
 
-	// Access an existing short URL
-	r.GET("/:slug", shortUrlController.GetShortUrl)
-	r.POST("/shorturls", middleware.ModelBindingWrapper[models.ShortUrl](createShortUrlController))
-	r.DELETE("/shorturls/:slug", deleteShortUrlController.HandleRequest)
+	controllers := BuildControllers(db)
 
-	// Get details about an existing short URL
-	r.GET("/shorturls/:slug", func(c *gin.Context) {
-		c.Writer.WriteHeader(501)
-	})
+	for _, c := range controllers {
+		c.Register(r)
+	}
 
 	return r
+}
+
+func BuildControllers(db *gorm.DB) []controllers.RegistrableController {
+	createShortUrlService := &services.CreateShortUrlService{DB: db}
+	deleteShortUrlService := &services.DeleteShortUrlService{DB: db}
+
+	createShortUrlController := shorturls.CreateShortUrlController{
+		CreateShortUrlService: createShortUrlService,
+	}
+
+	deleteShortUrlController := shorturls.DeleteShortUrlController{
+		DeleteShortUrlService: deleteShortUrlService,
+	}
+
+	accessShortUrlController := controllers.AccessShortUrlController{
+		DB: db,
+	}
+
+	return []controllers.RegistrableController{
+		&createShortUrlController,
+		&deleteShortUrlController,
+		&accessShortUrlController,
+	}
 }
