@@ -18,3 +18,12 @@ const (
 	DeleteResultNotFound
 	DeleteResultUnknownError
 )
+
+type GetClicksStatus int
+
+const (
+	GetClicksResultUnknown GetClicksStatus = iota
+	GetClicksResultSuccessful
+	GetClicksResultNotFound
+	GetClicksResultUnknownError
+)

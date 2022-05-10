@@ -11,13 +11,23 @@ import (
 )
 
 func ConnectDatabase(sqlDB *sql.DB) (*gorm.DB, error) {
+	db, err := ConnectDatabaseWithoutMigrating(sqlDB)
+
+	if err != nil {
+		return db, err
+	}
+
+	db.AutoMigrate(&models.ShortUrl{}, models.Click{})
+
+	return db, err
+}
+
+func ConnectDatabaseWithoutMigrating(sqlDB *sql.DB) (*gorm.DB, error) {
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		Conn: sqlDB,
 	}), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	})
-
-	db.AutoMigrate(&models.ShortUrl{}, models.Click{})
 
 	return db, err
 }
