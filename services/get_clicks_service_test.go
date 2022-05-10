@@ -7,29 +7,39 @@ import (
 	"url-shortener/enums"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/maxatome/go-testdeep/td"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGetClicks(t *testing.T) {
 	type test struct {
 		mockCountResult interface{}
-		expectedResult  GetClicksResult
+		expectedResult  td.StructFields
 	}
 
 	tests := []test{
 		{
 			mockCountResult: 12,
-			expectedResult: GetClicksResult{
-				Error:  nil,
-				Status: enums.GetClicksResultSuccessful,
-				Count:  12,
+			expectedResult: td.StructFields{
+				"Error":  nil,
+				"Status": enums.GetClicksResultSuccessful,
+				"Count":  int64(12),
 			},
 		},
 		{
 			mockCountResult: "boom",
-			expectedResult: GetClicksResult{
-				Error:  nil,
-				Status: enums.GetClicksResultUnknownError,
+			expectedResult: td.StructFields{
+				"Error":  td.HasPrefix("sql: Scan error"),
+				"Status": enums.GetClicksResultUnknownError,
+				"Count":  int64(0),
+			},
+		},
+		{
+			mockCountResult: nil,
+			expectedResult: td.StructFields{
+				"Error":  nil,
+				"Status": enums.GetClicksResultNotFound,
+				"Count":  int64(0),
 			},
 		},
 	}
@@ -40,9 +50,15 @@ func TestGetClicks(t *testing.T) {
 	defer sqlDB.Close()
 
 	for _, tc := range tests {
+		rows := sqlmock.NewRows([]string{"count(*)"})
+
+		if tc.mockCountResult != nil {
+			rows.AddRow(tc.mockCountResult)
+		}
+
 		mock.ExpectQuery(regexp.QuoteMeta("SELECT COUNT(*) FROM short_urls")).
 			WithArgs("slug").
-			WillReturnRows(sqlmock.NewRows([]string{"count(*)"}).AddRow(tc.mockCountResult))
+			WillReturnRows(rows)
 
 		gormDB, err := db.ConnectDatabaseWithoutMigrating(sqlDB)
 
@@ -55,80 +71,6 @@ func TestGetClicks(t *testing.T) {
 			t.Errorf("there were unfulfilled expectations: %s", err)
 		}
 
-		assert.Equal(t, tc.expectedResult.Status, result.Status)
+		td.Cmp(t, result, td.Struct(GetClicksResult{}, tc.expectedResult))
 	}
-}
-
-func TestGetClicksWithValidSlug(t *testing.T) {
-	sqlDB, mock, err := sqlmock.New()
-
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer sqlDB.Close()
-
-	mock.ExpectQuery(regexp.QuoteMeta("SELECT COUNT(*) FROM short_urls")).
-		WithArgs("slug").
-		WillReturnRows(sqlmock.NewRows([]string{"count(*)"}).AddRow(12))
-
-	gormDB, err := db.ConnectDatabaseWithoutMigrating(sqlDB)
-
-	subject := GetClicksService{DB: gormDB}
-	result := subject.GetClicks("slug")
-
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("there were unfulfilled expectations: %s", err)
-	}
-
-	assert.Equal(t, enums.GetClicksResultSuccessful, result.Status)
-	assert.Equal(t, int64(12), result.Count)
-}
-
-func TestGetClicksWithInvalidSlug(t *testing.T) {
-	sqlDB, mock, err := sqlmock.New()
-
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer sqlDB.Close()
-
-	mock.ExpectQuery(regexp.QuoteMeta("SELECT COUNT(*) FROM short_urls")).
-		WithArgs("invalid").
-		WillReturnRows(sqlmock.NewRows([]string{"count(*)"}))
-
-	gormDB, err := db.ConnectDatabaseWithoutMigrating(sqlDB)
-
-	subject := GetClicksService{DB: gormDB}
-	result := subject.GetClicks("invalid")
-
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("there were unfulfilled expectations: %s", err)
-	}
-
-	assert.Equal(t, enums.GetClicksResultNotFound, result.Status)
-}
-
-func TestGetClicksWithError(t *testing.T) {
-	sqlDB, mock, err := sqlmock.New()
-
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer sqlDB.Close()
-
-	mock.ExpectQuery(regexp.QuoteMeta("SELECT COUNT(*) FROM short_urls")).
-		WithArgs("error").
-		// Purposely returning a string to trigger error branch
-		WillReturnRows(sqlmock.NewRows([]string{"count(*)"}).AddRow("boom"))
-
-	gormDB, err := db.ConnectDatabaseWithoutMigrating(sqlDB)
-
-	subject := GetClicksService{DB: gormDB}
-	result := subject.GetClicks("error")
-
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("there were unfulfilled expectations: %s", err)
-	}
-
-	assert.Equal(t, enums.GetClicksResultUnknownError, result.Status)
 }
