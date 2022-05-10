@@ -76,6 +76,10 @@ func BuildControllers(db *gorm.DB) []controllers.RegistrableController {
 		DeleteShortUrlService: deleteShortUrlService,
 	}
 
+	getShortUrlClicksController := shorturls.GetShortUrlClicksController{
+		DB: db,
+	}
+
 	accessShortUrlController := controllers.AccessShortUrlController{
 		DB: db,
 	}
@@ -84,5 +88,6 @@ func BuildControllers(db *gorm.DB) []controllers.RegistrableController {
 		&createShortUrlController,
 		&deleteShortUrlController,
 		&accessShortUrlController,
+		&getShortUrlClicksController,
 	}
 }

@@ -17,7 +17,7 @@ func ConnectDatabase(sqlDB *sql.DB) (*gorm.DB, error) {
 		Logger: logger.Default.LogMode(logger.Info),
 	})
 
-	db.AutoMigrate(&models.ShortUrl{})
+	db.AutoMigrate(&models.ShortUrl{}, models.Click{})
 
 	return db, err
 }

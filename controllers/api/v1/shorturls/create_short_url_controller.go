@@ -74,7 +74,9 @@ func (r CreateShortUrlResponse) MarshalJSON() ([]byte, error) {
 
 	return json.Marshal(struct {
 		ShortUrl string `json:"short_url"`
+		Slug     string `json:"slug"`
 	}{
 		ShortUrl: u.String(),
+		Slug:     r.Slug,
 	})
 }
