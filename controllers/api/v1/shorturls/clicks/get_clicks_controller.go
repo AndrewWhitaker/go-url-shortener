@@ -1,4 +1,4 @@
-package shorturls
+package clicks
 
 import (
 	"net/http"

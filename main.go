@@ -6,6 +6,7 @@ import (
 	"os"
 	"url-shortener/controllers"
 	"url-shortener/controllers/api/v1/shorturls"
+	"url-shortener/controllers/api/v1/shorturls/clicks"
 	"url-shortener/db"
 	"url-shortener/services"
 
@@ -76,7 +77,7 @@ func BuildControllers(db *gorm.DB) []controllers.RegistrableController {
 		DeleteShortUrlService: deleteShortUrlService,
 	}
 
-	getShortUrlClicksController := shorturls.GetShortUrlClicksController{
+	getShortUrlClicksController := clicks.GetShortUrlClicksController{
 		DB: db,
 	}
 
