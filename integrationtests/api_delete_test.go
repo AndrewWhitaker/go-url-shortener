@@ -16,10 +16,6 @@ type deleteSuite struct {
 }
 
 func TestDelete(t *testing.T) {
-	if testing.Short() {
-		t.Skip()
-	}
-
 	suite.Run(t, new(deleteSuite))
 }
 

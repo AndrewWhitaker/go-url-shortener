@@ -3,6 +3,7 @@ package integrationtests
 import (
 	"context"
 	"database/sql"
+	"flag"
 	"log"
 	"os"
 	"testing"
@@ -15,11 +16,16 @@ import (
 var TestContext *ApiTestContext
 
 func TestMain(m *testing.M) {
-	TestContext = BuildTestContext()
+	flag.Parse()
 
-	exitVal := m.Run()
-	log.Println("AFTER")
-	os.Exit(exitVal)
+	if testing.Short() {
+		return
+	}
+
+	TestContext = BuildTestContext()
+	defer TestContext.cleanup()
+
+	os.Exit(m.Run())
 }
 
 func BuildTestContext() *ApiTestContext {

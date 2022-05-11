@@ -15,10 +15,6 @@ type createSuite struct {
 }
 
 func TestCreate(t *testing.T) {
-	if testing.Short() {
-		t.Skip()
-	}
-
 	suite.Run(t, new(createSuite))
 }
 
