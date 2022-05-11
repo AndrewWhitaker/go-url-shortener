@@ -11,6 +11,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+	"url-shortener/testhelpers"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -31,7 +32,7 @@ type apiTestSuite struct {
 
 func (suite *apiTestSuite) SetupSuite() {
 	ctx := context.Background()
-	container, db, err := CreateTestContainer(ctx, "testdb")
+	container, db, err := testhelpers.CreateTestContainer(ctx, "testdb")
 
 	if err != nil {
 		suite.T().Fatal(err)

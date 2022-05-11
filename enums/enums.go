@@ -27,3 +27,11 @@ const (
 	GetClicksResultNotFound
 	GetClicksResultUnknownError
 )
+
+type GetClicksTimePeriod int
+
+const (
+	GetClicksTimePeriodAllTime GetClicksTimePeriod = iota
+	GetClicksTimePeriodPastWeek
+	GetClicksTimePeriod24Hours
+)

@@ -68,6 +68,7 @@ func SetupServer(cfg *ServerConfig) *gin.Engine {
 func BuildControllers(db *gorm.DB) []controllers.RegistrableController {
 	createShortUrlService := &services.CreateShortUrlService{DB: db}
 	deleteShortUrlService := &services.DeleteShortUrlService{DB: db}
+	getClicksService := &services.GetClicksService{DB: db, Clock: services.SystemClock{}}
 
 	createShortUrlController := shorturls.CreateShortUrlController{
 		CreateShortUrlService: createShortUrlService,
@@ -78,7 +79,7 @@ func BuildControllers(db *gorm.DB) []controllers.RegistrableController {
 	}
 
 	getShortUrlClicksController := clicks.GetShortUrlClicksController{
-		DB: db,
+		GetClicksService: getClicksService,
 	}
 
 	accessShortUrlController := controllers.AccessShortUrlController{

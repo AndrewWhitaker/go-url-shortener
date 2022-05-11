@@ -3,14 +3,15 @@ package clicks
 import (
 	"net/http"
 	"url-shortener/e"
+	"url-shortener/enums"
 	"url-shortener/middleware"
+	"url-shortener/services"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 type GetShortUrlClicksController struct {
-	DB *gorm.DB
+	GetClicksService *services.GetClicksService
 }
 
 type GetShortUrlClicksRequest struct {
@@ -25,44 +26,38 @@ type GetShortUrlClicksResponse struct {
 func (controller *GetShortUrlClicksController) HandleRequest(c *gin.Context, request GetShortUrlClicksRequest) {
 	slug := c.Param("slug")
 
-	var count int64
+	result := controller.GetClicksService.GetClicks(
+		slug, enums.GetClicksTimePeriodAllTime,
+	)
 
-	// The GROUP BY helps us get 0 results if the short_urls row does not exist.
-	// We can check `RowsAffected` to understand if the query returned zero rows
-	// (short url does not exist) or 1 row (short url does exist)
-	countResult := controller.DB.
-		Raw(`
-			SELECT COUNT(*)
-			FROM
-				short_urls
-				LEFT OUTER JOIN clicks ON clicks.short_url_id = short_urls.id
-			WHERE
-				short_urls.slug = ?
-			GROUP BY short_urls.id
-		`, slug).Scan(&count)
+	var status int
+	var body interface{}
 
-	if countResult.Error != nil {
+	if result.Error != nil {
 		c.Writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	if countResult.RowsAffected == 1 {
-		c.JSON(http.StatusOK, &GetShortUrlClicksResponse{
-			Count:      count,
+	switch result.Status {
+	case enums.GetClicksResultSuccessful:
+		status = http.StatusOK
+		body = GetShortUrlClicksResponse{
+			Count:      result.Count,
 			TimePeriod: request.TimePeriod,
-		})
-
-		return
+		}
+	case enums.GetClicksResultNotFound:
+		status = http.StatusNotFound
+		body = e.ErrorResponse{
+			Errors: []e.ValidationError{
+				e.ValidationError{
+					Field:  "Slug",
+					Reason: "not found",
+				},
+			},
+		}
 	}
 
-	c.JSON(http.StatusNotFound, e.ErrorResponse{
-		Errors: []e.ValidationError{
-			e.ValidationError{
-				Field:  "Slug",
-				Reason: "not found",
-			},
-		},
-	})
+	c.JSON(status, body)
 }
 
 func (controller *GetShortUrlClicksController) Register(r *gin.Engine) {
