@@ -22,14 +22,21 @@ func (s *GetClicksService) GetClicks(slug string, timePeriod enums.GetClicksTime
 
 	var query *gorm.DB
 
+	now := s.Clock.Now()
+
+	// These are flawed calculations in anything but UTC, but close
+	// enough for now.
+	twentyFourHours := time.Duration(time.Hour * 24)
+	oneWeek := time.Duration(twentyFourHours * 7)
+
 	switch timePeriod {
 	case enums.GetClicksTimePeriodAllTime:
 		query = s.AllTimeClicksQuery(slug)
 	case enums.GetClicksTimePeriodPastWeek:
-		time := s.Clock.Now()
+		time := now.Add(-oneWeek)
 		query = s.ClicksAfter(slug, time)
 	case enums.GetClicksTimePeriod24Hours:
-		time := s.Clock.Now()
+		time := now.Add(-twentyFourHours)
 		query = s.ClicksAfter(slug, time)
 	}
 

@@ -91,7 +91,9 @@ func TestGetClicksFunctional(t *testing.T) {
 
 	ctx := context.Background()
 	container, sqlDB, err := testhelpers.CreateTestContainer(ctx, "clicksdb")
-	assert.Nil(t, err)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	defer container.Terminate(ctx)
 	defer sqlDB.Close()
@@ -113,7 +115,7 @@ func TestGetClicksFunctional(t *testing.T) {
 		time.Date(2022, 1, 2, 12, 0, 0, 0, time.UTC),
 		time.Date(2022, 4, 17, 16, 45, 0, 0, time.UTC),
 		time.Date(2022, 4, 30, 11, 30, 0, 0, time.UTC),
-		time.Date(2022, 5, 1, 20, 30, 0, 0, time.UTC),
+		time.Date(2022, 5, 3, 20, 30, 0, 0, time.UTC),
 		time.Date(2022, 5, 8, 11, 30, 0, 0, time.UTC),
 		time.Date(2022, 5, 10, 13, 45, 0, 0, time.UTC),
 	}
