@@ -38,9 +38,18 @@ type GetShortUrlClicksResponse struct {
 func (controller *GetShortUrlClicksController) HandleRequest(c *gin.Context, request GetShortUrlClicksRequest) {
 	slug := c.Param("slug")
 
-	result := controller.GetClicksService.GetClicks(
-		slug, enums.GetClicksTimePeriodAllTime,
-	)
+	var timePeriod enums.GetClicksTimePeriod
+
+	switch request.TimePeriod {
+	case "24_HOURS":
+		timePeriod = enums.GetClicksTimePeriod24Hours
+	case "1_WEEK":
+		timePeriod = enums.GetClicksTimePeriodPastWeek
+	case "ALL_TIME":
+		timePeriod = enums.GetClicksTimePeriodAllTime
+	}
+
+	result := controller.GetClicksService.GetClicks(slug, timePeriod)
 
 	var status int
 	var body interface{}

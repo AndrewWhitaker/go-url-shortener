@@ -8,5 +8,6 @@
 !go.sum
 !Dockerfile
 !.env
+!*.md
 
 !*/

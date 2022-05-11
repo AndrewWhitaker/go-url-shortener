@@ -57,7 +57,7 @@ func (controller *CreateShortUrlController) HandleRequest(c *gin.Context, reques
 		status = http.StatusConflict
 		body = e.ErrorResponse{
 			Errors: []e.ValidationError{
-				e.ValidationError{
+				{
 					Field:  "Slug",
 					Reason: "must be unique",
 				},

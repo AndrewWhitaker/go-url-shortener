@@ -31,7 +31,7 @@ func (s *GetClicksService) GetClicks(slug string, timePeriod enums.GetClicksTime
 
 	switch timePeriod {
 	case enums.GetClicksTimePeriodAllTime:
-		query = s.AllTimeClicksQuery(slug)
+		query = s.AllClicks(slug)
 	case enums.GetClicksTimePeriodPastWeek:
 		time := now.Add(-oneWeek)
 		query = s.ClicksAfter(slug, time)
@@ -62,7 +62,7 @@ func (s *GetClicksService) GetClicks(slug string, timePeriod enums.GetClicksTime
 	}
 }
 
-func (s *GetClicksService) AllTimeClicksQuery(slug string) *gorm.DB {
+func (s *GetClicksService) AllClicks(slug string) *gorm.DB {
 	return s.DB.Raw(`
 			SELECT COUNT(*)
 			FROM
