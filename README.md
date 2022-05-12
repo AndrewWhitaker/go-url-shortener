@@ -9,6 +9,25 @@ This is a URL shortening API written in Go. It supports the following high level
 * Getting simple statistics about short urls
 * Accessing short urls
 
+### Non-Goals
+
+Notably, this project currently does not support the following:
+
+* User management
+* Authentication or Authorization
+
+### High-Level Assumptions
+
+One important part of the requirements that drives the design of this system is that the requirement calls for an _internal service for our company_. A few conclusions arise from this requirement:
+
+1. The largest companies are millions of employees. We're not told how large "our company" in the requirements is, but let's assume that it's 1,000,000 employees. Furthermore, let's assume that 5% of employees create shorturls. Those employees each create 3 short URLs on average. That's **150,000** short URLs. This is by no means an application that needs to deal with a large volume of data.
+2. Our application is going to be read heavy, relative to our write load.
+3. We'll probably launch this on our internal company network; external users are not allowed.
+
+The biggest takeaway I came to here was that building something simple will probably serve us well.
+
+As an internal tool, I also decided to deprioritize user-specific functionality. The initial version of our application allows anyone to delete any short URL. For an initial launch of an internal tool, I think this is probably OK. Later on, we can integrate our employees if that's functionality we'd like to add.
+
 ## Running
 
 The easiest way to run the application is to use `docker-compose`. You should run the following to get the application started:
@@ -82,7 +101,7 @@ sequenceDiagram
 
 #### Go
 
-Go is not my primary language. I develop mostly in Java and TypeScript. The prompt specifically calls out using Go as something that might get you extra credit. I went ahead and decided to do this in Go to demonstrate that I can pick up new languages and be productive relatively quickly.
+Go is not my primary language. I develop mostly in Java and TypeScript. The prompt specifically calls out using Go as something that might get you extra credit. I went ahead and decided to do this in Go to demonstrate that I can pick up new languages and be productive quickly.
 
 Here are the major Go libraries that this project uses:
 
