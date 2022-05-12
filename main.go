@@ -4,7 +4,10 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"url-shortener/db"
+	"url-shortener/jobs"
 	"url-shortener/server"
+	"url-shortener/services"
 )
 
 func main() {
@@ -26,12 +29,16 @@ func main() {
 	fmt.Println(url)
 
 	fmt.Printf("Connecting to %s\n", url)
-	db, err := sql.Open("pgx", url)
+	sqlDB, err := sql.Open("pgx", url)
 
 	if err != nil {
 		panic(fmt.Sprintf("Unable to connect to postgres: %s", err))
 	}
 
-	config := server.ServerConfig{DB: db}
+	gormDB, err := db.ConnectDatabase(sqlDB)
+
+	jobs.StartScheduler(gormDB, services.SystemClock{})
+
+	config := server.ServerConfig{DB: gormDB}
 	server.SetupServer(&config).Run()
 }

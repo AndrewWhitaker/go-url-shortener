@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"testing"
+	"url-shortener/db"
 	"url-shortener/server"
 	"url-shortener/testhelpers"
 
@@ -31,23 +32,29 @@ func TestMain(m *testing.M) {
 func BuildTestContext() *ApiTestContext {
 	ctx := context.Background()
 
-	container, db, err := testhelpers.CreateTestContainer(ctx, "testdb")
+	container, sqlDB, err := testhelpers.CreateTestContainer(ctx, "testdb")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	gormDB, err := db.ConnectDatabase(sqlDB)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	server := server.SetupServer(
-		&server.ServerConfig{DB: db},
+		&server.ServerConfig{DB: gormDB},
 	)
 
 	testContext := &ApiTestContext{
-		db:     db,
+		db:     sqlDB,
 		server: server,
 	}
 
 	testContext.cleanup = func() {
-		db.Close()
+		sqlDB.Close()
 		container.Terminate(ctx)
 	}
 

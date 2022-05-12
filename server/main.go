@@ -1,11 +1,9 @@
 package server
 
 import (
-	"database/sql"
 	"url-shortener/controllers"
 	"url-shortener/controllers/api/v1/shorturls"
 	"url-shortener/controllers/api/v1/shorturls/clicks"
-	"url-shortener/db"
 	"url-shortener/services"
 
 	"github.com/gin-gonic/gin"
@@ -13,19 +11,13 @@ import (
 )
 
 type ServerConfig struct {
-	DB *sql.DB
+	DB *gorm.DB
 }
 
 func SetupServer(cfg *ServerConfig) *gin.Engine {
-	db, err := db.ConnectDatabase(cfg.DB)
-
-	if err != nil {
-		panic("Failed to connect to database")
-	}
-
 	r := gin.Default()
 
-	controllers := BuildControllers(db)
+	controllers := BuildControllers(cfg.DB)
 
 	for _, c := range controllers {
 		c.Register(r)
