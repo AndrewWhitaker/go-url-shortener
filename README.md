@@ -43,7 +43,28 @@ The application exposes the following routes:
 ### Technology Choices
 
 #### Go
+
+Go is not my primary language. I develop mostly in Java and TypeScript. The prompt specifically calls out using Go as something that might get you extra credit. I went ahead and decided to do this in Go to demonstrate that I can pick up new languages and be productive relatively quickly.
+
+Here are the major Go libraries that this project uses:
+
+| Project Name | Purpose               |
+|--------------|-----------------------|
+| GIN          | Web Framework         |
+| GORM         | Data access layer/ORM |
+| Testify      | Testing               |
+
+##### Downsides and Alternatives Considered
+
+As stated above, the big downside of doing this in Go was my unfamiliarity with the language. I also considered completing this in:
+
+* **Java/Spring Boot**: Lots of automatic support for building APIs quickly.
+* **TypeScript/Express**: Relatively easy to setup, plus I'm familiar with the ecosystem.
+
 #### Docker
+
+Docker (and Docker Compose) allow easily spinning up a local environment with a coordinated web application and Postgres database.
+
 #### Postgres
 
 The backing database for the application is Postgres. I chose Postgres because I'm very familiar with it, and it's a reasonable default for most new projects. Postgres met the following requirements outlined in the specification:
@@ -57,7 +78,7 @@ Postgres is also widely supported by open source ORMs and other database tooling
 
 I considered the following other database technologies:
 
-* **REDIS**: Simple key/value store that does support some measure of durability. However, relational databases like Postgres provide stronger ACID guarantees.
+* **Redis**: Simple key/value store that does support some measure of durability. However, relational databases like Postgres provide stronger ACID guarantees.
 * **ClickHouse**: Postgres isn't really meant for storing analytical data. I considered using ClickHouse to store short url accesses. However, I abandoned this idea in favor of keeping the architecture simple. We can use a separate analytics database later on if we need to scale in that direction.
 * **SQLite**: SQLite is an excellent self-contained database that would have worked fine in this application. However, the extra overhead of getting Postgres running in a docker container was minimal compared to getting SQLite working. That said, I think this would have been a fine choice as well.
 
