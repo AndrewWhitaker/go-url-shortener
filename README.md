@@ -40,6 +40,14 @@ The application exposes the following routes:
 
 ## Architecture and Design
 
+## High Level Overview
+
+```mermaid
+graph LR
+    A(Client) -->|REST API| B[Web Application]
+    B --> C[(PostgreSQL)]
+```
+
 ### Technology Choices
 
 #### Go
@@ -63,7 +71,7 @@ As stated above, the big downside of doing this in Go was my unfamiliarity with 
 
 #### Docker
 
-Docker (and Docker Compose) allow easily spinning up a local environment with a coordinated web application and Postgres database.
+Docker (and Docker Compose) allow easily spinning up a local environment with a coordinated web application and Postgres database. Lots of modern infrastructure also supports deploying docker containers, so building this in docker allows me to theoretically deploy this somewhere pretty easily.
 
 #### Postgres
 
