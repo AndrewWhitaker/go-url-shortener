@@ -9,7 +9,7 @@ import (
 	"url-shortener/db"
 	"url-shortener/enums"
 	"url-shortener/models"
-	"url-shortener/testhelpers"
+	"url-shortener/test/helpers"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/maxatome/go-testdeep/td"
@@ -90,7 +90,7 @@ func TestGetClicksFunctional(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	container, sqlDB, err := testhelpers.CreateTestContainer(ctx, "clicksdb")
+	container, sqlDB, err := helpers.CreateTestContainer(ctx, "clicksdb")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -1,4 +1,4 @@
-package integrationtests
+package integration
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"testing"
 	"url-shortener/db"
 	"url-shortener/server"
-	"url-shortener/testhelpers"
+	"url-shortener/test/helpers"
 
 	"github.com/gin-gonic/gin"
 )
@@ -32,7 +32,7 @@ func TestMain(m *testing.M) {
 func BuildTestContext() *ApiTestContext {
 	ctx := context.Background()
 
-	container, sqlDB, err := testhelpers.CreateTestContainer(ctx, "testdb")
+	container, sqlDB, err := helpers.CreateTestContainer(ctx, "testdb")
 
 	if err != nil {
 		log.Fatal(err)

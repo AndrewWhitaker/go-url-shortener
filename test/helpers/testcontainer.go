@@ -1,5 +1,5 @@
 /* https://brietsparks.com/testcontainers-golang-db-access/ */
-package testhelpers
+package helpers
 
 import (
 	"context"
