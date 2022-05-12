@@ -51,16 +51,16 @@ graph LR
 ### Project Organization
 
 ```
-├── controllers		# handle incoming requests
-├── db						# database related code
-├── e							# error handling
-├── enums					# enumerated types
-├── jobs					# scheduled tasks
+├── controllers   # handle incoming requests
+├── db            # database related code
+├── e             # error handling
+├── enums         # enumerated types
+├── jobs          # scheduled tasks
 ├── middleware    # web server middleware
-├── models				# business objects/entities
-├── server				# web server startup
-├── services			# service layer
-├── test					# integration tests and test helpers
+├── models        # business objects/entities
+├── server        # web server startup
+├── services      # service layer
+├── test          # integration tests and test helpers
 ```
 
 ### Request Flow
