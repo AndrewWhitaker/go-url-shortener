@@ -49,8 +49,11 @@ func (s *CreateShortUrlService) Create(request *models.ShortUrl) CreationResult 
 
 	var existing models.ShortUrl
 
+	whereClause := models.ShortUrl{}
+	whereClause.LongUrl = request.LongUrl
+
 	err = s.DB.
-		Where(&models.ShortUrl{LongUrl: request.LongUrl}).
+		Where(&whereClause).
 		First(&existing).Error
 
 	if err == nil {

@@ -120,10 +120,9 @@ func TestGetClicksFunctional(t *testing.T) {
 		time.Date(2022, 5, 10, 13, 45, 0, 0, time.UTC),
 	}
 
-	shortUrl := models.ShortUrl{
-		Slug:    "slug",
-		LongUrl: "https://www.cloudflare.com",
-	}
+	shortUrl := models.ShortUrl{}
+	shortUrl.Slug = "slug"
+	shortUrl.LongUrl = "https://www.cloudflare.com"
 
 	err = gormDB.Create(&shortUrl).Error
 

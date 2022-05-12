@@ -15,6 +15,17 @@ type DeleteShortUrlController struct {
 	DeleteShortUrlService *services.DeleteShortUrlService
 }
 
+// DeleteShortUrl  godoc
+// @Summary      Delete an existing short URL
+// @Description  Delete an existing short URL by supplying the slug.
+// @Tags         shorturls
+// @Accept       json
+// @Produce      json
+// @Param        slug  path  string  true  "slug of short URL to delete"
+// @Success      204
+// @Failure      404  {object}  e.ErrorResponse
+// @Failure      500
+// @Router       /shorturls/{slug} [delete]
 func (controller *DeleteShortUrlController) HandleRequest(c *gin.Context) {
 	slug := c.Param("slug")
 	result := controller.DeleteShortUrlService.Delete(slug)

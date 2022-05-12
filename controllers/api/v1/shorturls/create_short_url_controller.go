@@ -17,6 +17,20 @@ type CreateShortUrlController struct {
 	CreateShortUrlService *services.CreateShortUrlService
 }
 
+// CreateShortUrl godoc
+// @Summary      Create a new short url
+// @Description  Create a new short url. Users may specify a slug and an expiration date. If a slug is not supplied, an 8 character slug will automatically be generated for the short url.
+// @Tags         shorturls
+// @Accept       json
+// @Produce      json
+// @Param        shorturl  body      models.ShortUrlCreateFields  true  "New short URL parameters"
+// @Success      200       {object}  models.ShortUrlReadFields
+// @Success      201       {object}  models.ShortUrlReadFields
+// @Failure      400       {object}  e.ErrorResponse
+// @Failure      404
+// @Failure      409  {object}  e.ErrorResponse
+// @Failure      500
+// @Router       /shorturls [post]
 func (controller *CreateShortUrlController) HandleRequest(c *gin.Context, request models.ShortUrl) {
 	createResult := controller.CreateShortUrlService.Create(&request)
 
@@ -31,13 +45,13 @@ func (controller *CreateShortUrlController) HandleRequest(c *gin.Context, reques
 	switch createResult.Status {
 	case enums.CreationResultCreated:
 		status = http.StatusCreated
-		body = CreateShortUrlResponse{
+		body = createShortUrlResponseHelper{
 			Host:     c.Request.Host,
 			ShortUrl: *createResult.Record,
 		}
 	case enums.CreationResultAlreadyExists:
 		status = http.StatusOK
-		body = CreateShortUrlResponse{
+		body = createShortUrlResponseHelper{
 			Host:     c.Request.Host,
 			ShortUrl: *createResult.Record,
 		}
@@ -60,23 +74,25 @@ func (controller *CreateShortUrlController) Register(r *gin.Engine) {
 	r.POST("/api/v1/shorturls", middleware.ModelBindingWrapper[models.ShortUrl](controller))
 }
 
-type CreateShortUrlResponse struct {
+type createShortUrlResponseHelper struct {
 	Host string
 	models.ShortUrl
 }
 
-func (r CreateShortUrlResponse) MarshalJSON() ([]byte, error) {
+type CreateShortUrlResponse struct {
+	ShortUrl string `json:"short_url"`
+	models.ShortUrlReadFields
+}
+
+func (r createShortUrlResponseHelper) MarshalJSON() ([]byte, error) {
 	u := url.URL{
 		Scheme: "http",
 		Host:   r.Host,
 		Path:   r.Slug,
 	}
 
-	return json.Marshal(struct {
-		AbsoluteShortUrl string `json:"short_url"`
-		models.ShortUrl
-	}{
-		AbsoluteShortUrl: u.String(),
-		ShortUrl:         r.ShortUrl,
+	return json.Marshal(CreateShortUrlResponse{
+		ShortUrl:           u.String(),
+		ShortUrlReadFields: r.ShortUrl.ShortUrlReadFields,
 	})
 }

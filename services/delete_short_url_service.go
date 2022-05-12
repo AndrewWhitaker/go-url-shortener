@@ -20,8 +20,11 @@ type DeleteResult struct {
 func (s *DeleteShortUrlService) Delete(slug string) DeleteResult {
 	var shortUrl models.ShortUrl
 
+	whereClause := models.ShortUrl{}
+	whereClause.Slug = slug
+
 	res := s.DB.
-		Where(&models.ShortUrl{Slug: slug}).
+		Where(&whereClause).
 		Delete(&shortUrl)
 
 	response := DeleteResult{}

@@ -18,8 +18,11 @@ func (controller *AccessShortUrlController) HandleRequest(c *gin.Context) {
 
 	var shortUrl models.ShortUrl
 
+	whereClause := models.ShortUrl{}
+	whereClause.Slug = slug
+
 	err := controller.DB.
-		Where(&models.ShortUrl{Slug: slug}).
+		Where(&whereClause).
 		First(&shortUrl).Error
 
 	if err == nil {

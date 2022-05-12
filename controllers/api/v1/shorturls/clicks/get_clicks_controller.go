@@ -23,6 +23,18 @@ type GetShortUrlClicksResponse struct {
 	TimePeriod string `json:"time_period"`
 }
 
+// GetShortUrlClicks  godoc
+// @Summary      Get clicks for a short URL
+// @Description  Get clicks (statistics) for a short URL. Time periods of all time, 24 hours, and 1 week are permitted.
+// @Tags         shorturls
+// @Accept       json
+// @Produce      json
+// @Param        slug         path      string  true  "slug of short URL to retrieve statistics for"
+// @Param        time_period  query     string  true  "time period to retrieve statistics for"  Enums(24_HOURS, 1_WEEK, ALL_TIME)
+// @Success      200          {object}  GetShortUrlClicksResponse
+// @Failure      404          {object}  e.ErrorResponse
+// @Failure      500
+// @Router       /shorturls/{slug}/clicks [get]
 func (controller *GetShortUrlClicksController) HandleRequest(c *gin.Context, request GetShortUrlClicksRequest) {
 	slug := c.Param("slug")
 
