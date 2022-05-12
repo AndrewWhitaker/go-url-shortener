@@ -32,14 +32,14 @@ func (controller *CreateShortUrlController) HandleRequest(c *gin.Context, reques
 	case enums.CreationResultCreated:
 		status = http.StatusCreated
 		body = CreateShortUrlResponse{
-			Slug: createResult.Record.Slug,
-			Host: c.Request.Host,
+			Host:     c.Request.Host,
+			ShortUrl: *createResult.Record,
 		}
 	case enums.CreationResultAlreadyExists:
 		status = http.StatusOK
 		body = CreateShortUrlResponse{
-			Slug: createResult.Record.Slug,
-			Host: c.Request.Host,
+			Host:     c.Request.Host,
+			ShortUrl: *createResult.Record,
 		}
 	case enums.CreationResultDuplicateSlug:
 		status = http.StatusConflict
@@ -61,8 +61,8 @@ func (controller *CreateShortUrlController) Register(r *gin.Engine) {
 }
 
 type CreateShortUrlResponse struct {
-	Slug string
 	Host string
+	models.ShortUrl
 }
 
 func (r CreateShortUrlResponse) MarshalJSON() ([]byte, error) {
@@ -73,10 +73,10 @@ func (r CreateShortUrlResponse) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(struct {
-		ShortUrl string `json:"short_url"`
-		Slug     string `json:"slug"`
+		AbsoluteShortUrl string `json:"short_url"`
+		models.ShortUrl
 	}{
-		ShortUrl: u.String(),
-		Slug:     r.Slug,
+		AbsoluteShortUrl: u.String(),
+		ShortUrl:         r.ShortUrl,
 	})
 }

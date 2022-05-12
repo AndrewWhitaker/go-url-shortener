@@ -1,11 +1,16 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"gopkg.in/guregu/null.v4"
+)
 
 type ShortUrl struct {
-	Id        int64  `gorm:"primaryKey"`
-	LongUrl   string `gorm:"index:uq_short_urls_long_url,unique;not null" json:"long_url" binding:"required"`
-	CreatedAt time.Time
-	Slug      string  `gorm:"index:uq_short_urls_slug,unique;not null" json:"slug"`
-	Clicks    []Click `gorm:"constraint:OnDelete:CASCADE"`
+	Id        int64     `json:"-"          gorm:"primaryKey"`
+	LongUrl   string    `json:"long_url"   gorm:"index:uq_short_urls_long_url,unique;not null" binding:"required"`
+	CreatedAt time.Time `json:"created_at"`
+	ExpiresOn null.Time `json:"expires_on"`
+	Slug      string    `json:"slug"       gorm:"index:uq_short_urls_slug,unique;not null"`
+	Clicks    []Click   `json:"-"          gorm:"constraint:OnDelete:CASCADE"`
 }

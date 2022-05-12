@@ -38,14 +38,7 @@ func (suite *accessSuite) TestAccessWithValidSlugReturns301() {
 	testAPI.PostJSON("/api/v1/shorturls", gin.H{"long_url": "https://www.cloudflare.com"}).
 		CmpStatus(http.StatusCreated).
 		CmpJSONBody(
-			td.JSON(
-				`{
-				   "short_url": "$shortUrl",
-					 "slug": "$slug"
-				 }`,
-				td.Tag("shortUrl", td.Ignore()),
-				td.Tag("slug", td.Catch(&slug, td.Ignore())),
-			),
+			td.SuperJSONOf(`{"slug": "$slug"}`, td.Tag("slug", td.Catch(&slug, td.Ignore()))),
 		)
 
 	testAPI.Get(fmt.Sprintf("/%s", slug)).

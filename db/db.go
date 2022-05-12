@@ -3,6 +3,7 @@ package db
 
 import (
 	"database/sql"
+	"time"
 	"url-shortener/models"
 
 	"gorm.io/driver/postgres"
@@ -27,6 +28,9 @@ func ConnectDatabaseWithoutMigrating(sqlDB *sql.DB) (*gorm.DB, error) {
 		Conn: sqlDB,
 	}), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
+		NowFunc: func() time.Time {
+			return time.Now().Truncate(time.Microsecond)
+		},
 	})
 
 	return db, err

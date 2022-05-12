@@ -34,14 +34,7 @@ func (suite *clicksSuite) TestGetClicksWithValidSlugReturns200() {
 	testAPI.PostJSON("/api/v1/shorturls", gin.H{"long_url": "https://www.cloudflare.com"}).
 		CmpStatus(http.StatusCreated).
 		CmpJSONBody(
-			td.JSON(
-				`{
-				   "short_url": "$shortUrl",
-					 "slug": "$slug"
-				 }`,
-				td.Tag("slug", td.Catch(&slug, td.Ignore())),
-				td.Tag("shortUrl", td.Ignore()),
-			),
+			td.SuperJSONOf(`{"slug": "$slug"}`, td.Tag("slug", td.Catch(&slug, td.Ignore()))),
 		)
 
 	for i := 0; i < 5; i++ {

@@ -34,11 +34,8 @@ func (suite *deleteSuite) TestDeleteWithValidSlugReturns204() {
 	testAPI.PostJSON("/api/v1/shorturls", gin.H{"long_url": "https://www.google.com"}).
 		CmpStatus(http.StatusCreated).
 		CmpJSONBody(
-			td.JSON(
-				`{
-				   "short_url": "$shortUrl",
-				   "slug": "$slug"
-				 }`,
+			td.SuperJSONOf(
+				`{"slug": "$slug"}`,
 				td.Tag("slug", td.Catch(&slug, td.Ignore())),
 				td.Tag("shortUrl", td.Ignore()),
 			),
