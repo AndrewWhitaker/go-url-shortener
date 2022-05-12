@@ -37,3 +37,31 @@ The application exposes the following routes:
 | `DELETE`      | `/api/v1/shorturls/:slug` | Delete the short URL associated with the given slug
 | `GET`         | `/api/v1/shorturls/:slug` | Get short URL information associated with the given slug
 | `GET`         | `/api/v1/shorturls/:slug/clicks` | Get analytics data associated with the given slug
+
+## Architecture and Design
+
+### Technology Choices
+
+#### Go
+#### Docker
+#### Postgres
+
+The backing database for the application is Postgres. I chose Postgres because I'm very familiar with it, and it's a reasonable default for most new projects. Postgres met the following requirements outlined in the specification:
+
+* **No duplicate URLs are allowed to be created.** This is handled using unique constraints within Postgres.
+* **Data persistence (must survive computer restarts)**. Since Postgres features ACID properties, the _Durability_ property ensures that data remains committed even in the event of a system failure or restart.
+
+Postgres is also widely supported by open source ORMs and other database tooling.
+
+##### Downsides and Alternatives Considered
+
+I considered the following other database technologies:
+
+* **REDIS**: Simple key/value store that does support some measure of durability. However, relational databases like Postgres provide stronger ACID guarantees.
+* **ClickHouse**: Postgres isn't really meant for storing analytical data. I considered using ClickHouse to store short url accesses. However, I abandoned this idea in favor of keeping the architecture simple. We can use a separate analytics database later on if we need to scale in that direction.
+* **SQLite**: SQLite is an excellent self-contained database that would have worked fine in this application. However, the extra overhead of getting Postgres running in a docker container was minimal compared to getting SQLite working. That said, I think this would have been a fine choice as well.
+
+As mentioned in the "ClickHouse" note, the main part of the requirements that Postgres (or any relational database) may not handle well is the analytics piece. If our URL shortener service gets lots of use, we will have a huge `clicks` table and we'll clearly have to come up with solutions to scale that part of the architecture.
+
+
+
