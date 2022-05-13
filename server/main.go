@@ -7,8 +7,9 @@ import (
 	_ "url-shortener/docs"
 	"url-shortener/services"
 
+	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
-	"github.com/swaggo/gin-swagger"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 	"gorm.io/gorm"
 )
@@ -27,6 +28,7 @@ func SetupServer(cfg *ServerConfig) *gin.Engine {
 	}
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r.Use(static.Serve("/", static.LocalFile("./views", true)))
 
 	return r
 }
