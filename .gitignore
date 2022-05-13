@@ -3,6 +3,7 @@
 !/.gitignore
 !*.yaml
 !*.go
+!/assets/**/*
 
 !go.mod
 !go.sum

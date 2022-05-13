@@ -9,19 +9,19 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"os"
 	"url-shortener/db"
+	"url-shortener/env"
 	"url-shortener/jobs"
 	"url-shortener/server"
 	"url-shortener/services"
 )
 
 func main() {
-	postgresHost := os.Getenv("POSTGRES_HOST")
-	postgresPort := os.Getenv("POSTGRES_PORT")
-	postgresUser := os.Getenv("POSTGRES_USER")
-	postgresPass := os.Getenv("POSTGRES_PASSWORD")
-	postgresDatabase := os.Getenv("POSTGRES_DATABASE")
+	postgresHost := env.GetEnvVariable(env.PostgresHost)
+	postgresPort := env.GetEnvVariable(env.PostgresPort)
+	postgresUser := env.GetEnvVariable(env.PostgresUser)
+	postgresPass := env.GetEnvVariable(env.PostgresPassword)
+	postgresDatabase := env.GetEnvVariable(env.PostgresDatabase)
 
 	url := fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/%s",

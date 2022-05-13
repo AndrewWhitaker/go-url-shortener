@@ -1,10 +1,12 @@
 package server
 
 import (
+	"strings"
 	"url-shortener/controllers"
 	"url-shortener/controllers/api/v1/shorturls"
 	"url-shortener/controllers/api/v1/shorturls/clicks"
 	_ "url-shortener/docs"
+	"url-shortener/env"
 	"url-shortener/services"
 
 	"github.com/gin-gonic/contrib/static"
@@ -28,7 +30,10 @@ func SetupServer(cfg *ServerConfig) *gin.Engine {
 	}
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	r.Use(static.Serve("/", static.LocalFile("./views", true)))
+
+	if strings.EqualFold("RELEASE", env.GetEnvVariable(env.GinMode)) {
+		r.Use(static.Serve("/", static.LocalFile("./assets/build", true)))
+	}
 
 	return r
 }
