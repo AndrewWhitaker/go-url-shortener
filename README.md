@@ -217,6 +217,8 @@ Referenced by:
 
 Users can specify their own "slug" or the system will generate one. I chose to use [nanoid](https://github.com/ai/nanoid) (specifically [go-nanoid](https://github.com/matoous/go-nanoid)) to generate URL-friendly slugs. Currently, slugs are configured to be 8 characters long, and they use `[A-Za-z0-9]` as an input alphabet for nanoid generation. With these settings, we _could_ run into collisions eventually, but it would be easy to regenerate slugs that would be duplicates.
 
+Only URLs with `http` and `https` schemes are allowed.
+
 Here are some other rules about short URL creation:
 
 * **Long URLs _and_ short URLs must be unique in the database**. A unique constraint on the `short_urls` table prevents duplicates from being inserted.
