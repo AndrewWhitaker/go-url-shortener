@@ -45,7 +45,7 @@ func (suite *accessSuite) TestAccessWithValidSlugReturns301() {
 		CmpStatus(http.StatusMovedPermanently).
 		CmpHeader(http.Header{
 			"Location":      []string{"https://www.cloudflare.com"},
-			"Cache-Control": []string{"private,max-age=0"},
+			"Cache-Control": []string{"no-cache"},
 		})
 }
 

@@ -50,8 +50,9 @@ This will start the webserver on `localhost:8080` and you can begin to issue req
 Assuming your machine has everything required, you should be able to run:
 
 ```
-make build # build the application
-make test  # run all tests
+make build      # build the application
+make test       # run all tests
+make test-short # run only unit tests
 ```
 
 If you want to run the application locally, you'll need to spin up a test database. The easiest way to do this is using `docker compose`:
@@ -173,6 +174,10 @@ The backing database for the application is Postgres. I chose Postgres because I
 
 Postgres is also widely supported by open source ORMs and other database tooling.
 
+##### A note on GORM & `AutoMigrate`
+
+I wouldn't ever use something like `AutoMigrate` in a "real" application. Database migrations need to be carefully and deliberately applied, typically with a schema evolution process that exists outside of your application startup.
+
 ##### Downsides and Alternatives Considered
 
 I considered the following other database technologies:
@@ -182,6 +187,10 @@ I considered the following other database technologies:
 * **SQLite**: SQLite is an excellent self-contained database that would have worked fine in this application. However, the extra overhead of getting Postgres running in a docker container was minimal compared to getting SQLite working. That said, I think this would have been a fine choice as well.
 
 As mentioned in the "ClickHouse" note, the main part of the requirements that Postgres (or any relational database) may not handle well is the analytics piece. If our URL shortener service gets lots of use, we will have a huge `clicks` table and we'll clearly have to come up with solutions to scale that part of the architecture.
+
+#### REST vs GraphQL vs ...
+
+I chose REST because our current requirements don't call for a rich domain with lots of interrelated or hierarchical objects. I think a simple REST API was a better fit for this project.
 
 ### Short URL Mechanics
 
@@ -224,7 +233,16 @@ Short URLs are immutable and updates are not allowed.
 
 #### Access
 
-After some searching and experimentation with bit.ly and tinyurl, I decided that the most sensible HTTP status to use was `301 MOVED PERMANENTLY`. The more interesting pieces of this were two parts of the header:
+##### Status Code
+
+I considered the following four status codes (which would all perform redirects):
+
+* `301 MOVED PERMANENTLY`
+* `302 FOUND`
+* `303 SEE OTHER`
+* `307 TEMPORARY REDIRECT`
+
+After some research, I believe `302`, `303`, and `307` are in the same family of temporary redirects. Any of these might work fine, but I found `301 MOVED PERMANENTLY` to best represent the function of a URL shortener. With that status we're signaling "this URL will permanently redirect to this other URL."
 
 ##### `Cache-Control` 
 
@@ -267,12 +285,11 @@ Ideas for scaling this include:
 * **Observability**: This was lower on my priority list since it was listed as "optional" in the requirements
 * **Real Deployment**: It would have been nice to get this deployed somewhere like Heroku
 
-
 ## Development Philosophies
 
 ### Testing
 
-For this project I wrote high level tests (in `test/integration`) that use a real database and real web server. This allowed me to constantly refactor underneath those tests. I did not write many unit tests since the application isn't very complex, and I prefer to avoid mocking where possible. The integration tests run fast enough and do a good job covering most cases.
+For this project I wrote high level tests (in `test/integration`) that use a real database and real web server. I typically did this before any implementation. This allowed me to constantly refactor underneath those tests. I did not write many unit tests since the application isn't very complex, and I prefer to avoid mocking where possible. The integration tests run fast enough and do a good job covering most cases.
 
 ### Git Workflow
 

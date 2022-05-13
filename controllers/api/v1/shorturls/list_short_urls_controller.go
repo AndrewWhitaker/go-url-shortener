@@ -28,11 +28,11 @@ func (controller *ListShortUrlsController) HandleRequest(c *gin.Context) {
 		Order("created_at ASC").
 		Find(&allShortUrls)
 
-	var jsonResults []createShortUrlResponseHelper
+	var jsonResults []shortUrlResponseHelper
 
 	if listResult.Error == nil {
 		for _, shortUrl := range allShortUrls {
-			jsonResults = append(jsonResults, createShortUrlResponseHelper{
+			jsonResults = append(jsonResults, shortUrlResponseHelper{
 				Host:     c.Request.Host,
 				ShortUrl: shortUrl,
 			})

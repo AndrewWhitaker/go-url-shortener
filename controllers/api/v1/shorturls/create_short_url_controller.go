@@ -43,13 +43,13 @@ func (controller *CreateShortUrlController) HandleRequest(c *gin.Context, reques
 	switch createResult.Status {
 	case enums.CreationResultCreated:
 		status = http.StatusCreated
-		body = createShortUrlResponseHelper{
+		body = shortUrlResponseHelper{
 			Host:     c.Request.Host,
 			ShortUrl: *createResult.Record,
 		}
 	case enums.CreationResultAlreadyExists:
 		status = http.StatusOK
-		body = createShortUrlResponseHelper{
+		body = shortUrlResponseHelper{
 			Host:     c.Request.Host,
 			ShortUrl: *createResult.Record,
 		}
@@ -70,9 +70,4 @@ func (controller *CreateShortUrlController) HandleRequest(c *gin.Context, reques
 
 func (controller *CreateShortUrlController) Register(r *gin.Engine) {
 	r.POST("/api/v1/shorturls", middleware.ModelBindingWrapper[models.ShortUrl](controller))
-}
-
-type CreateShortUrlResponse struct {
-	ShortUrl string `json:"short_url"`
-	models.ShortUrlReadFields
 }

@@ -41,7 +41,7 @@ func (controller *DeleteShortUrlController) HandleRequest(c *gin.Context) {
 	case enums.DeleteResultNotFound:
 		c.JSON(http.StatusNotFound, e.ErrorResponse{
 			Errors: []e.ValidationError{
-				e.ValidationError{
+				{
 					Field:  "Slug",
 					Reason: "not found",
 				},

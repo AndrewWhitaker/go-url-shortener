@@ -37,7 +37,7 @@ func (controller *GetShortUrlController) HandleRequest(c *gin.Context) {
 		First(&shortUrl).Error
 
 	if err == nil {
-		c.JSON(http.StatusOK, createShortUrlResponseHelper{
+		c.JSON(http.StatusOK, shortUrlResponseHelper{
 			Host:     c.Request.Host,
 			ShortUrl: shortUrl,
 		})

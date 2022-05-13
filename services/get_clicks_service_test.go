@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"regexp"
 	"testing"
 	"time"
@@ -102,8 +101,6 @@ func TestGetClicksFunctional(t *testing.T) {
 	assert.Nil(t, err)
 
 	clock := TestClock{}
-
-	fmt.Printf("clock = %v", clock)
 
 	subject := GetClicksService{
 		DB:    gormDB,

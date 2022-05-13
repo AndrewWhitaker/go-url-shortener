@@ -70,7 +70,7 @@ func (controller *GetShortUrlClicksController) HandleRequest(c *gin.Context, req
 		status = http.StatusNotFound
 		body = e.ErrorResponse{
 			Errors: []e.ValidationError{
-				e.ValidationError{
+				{
 					Field:  "Slug",
 					Reason: "not found",
 				},
