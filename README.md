@@ -30,6 +30,12 @@ Running the project requires:
 
 ### Getting Started
 
+Clone the repository:
+
+```
+git clone git@github.com:AndrewWhitaker/go-url-shortener.git
+```
+
 #### Option 1: Docker
 
 The easiest way to run the application is to use `docker-compose`. You should run the following to get the application started:
