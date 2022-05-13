@@ -263,7 +263,18 @@ Ideas for scaling this include:
 
 ## Things I didn't quite get to
 
-**End-User Experience**: I began work on a ReactJS frontend (see the `frontend` branch in this repository), but I ran out of time.
-**Observability**: This was lower on my priority list since it was listed as "optional" in the requirements
-**Real Deployment**: It would have been nice to get this deployed somewhere like Heroku
+* **End-User Experience**: I began work on a ReactJS frontend (see the `frontend` branch in this repository), but I ran out of time.
+* **Observability**: This was lower on my priority list since it was listed as "optional" in the requirements
+* **Real Deployment**: It would have been nice to get this deployed somewhere like Heroku
+
+
+## Development Philosophies
+
+### Testing
+
+For this project I wrote high level tests (in `test/integration`) that use a real database and real web server. This allowed me to constantly refactor underneath those tests. I did not write many unit tests since the application isn't very complex, and I prefer to avoid mocking where possible. The integration tests run fast enough and do a good job covering most cases.
+
+### Git Workflow
+
+While it might not look like it, I did _not_ just commit to `main` through the duration of development. I like to use `git merge <branch> --ff-only` to create a linear history and avoid merge commits.
 
