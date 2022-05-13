@@ -48,6 +48,10 @@ func BuildControllers(db *gorm.DB) []controllers.RegistrableController {
 		DB: db,
 	}
 
+	listShortUrlsController := shorturls.ListShortUrlsController{
+		DB: db,
+	}
+
 	getShortUrlClicksController := clicks.GetShortUrlClicksController{
 		GetClicksService: getClicksService,
 	}
@@ -62,5 +66,6 @@ func BuildControllers(db *gorm.DB) []controllers.RegistrableController {
 		&accessShortUrlController,
 		&getShortUrlClicksController,
 		&getShortUrlController,
+		&listShortUrlsController,
 	}
 }

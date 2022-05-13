@@ -17,6 +17,33 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/shorturls": {
+            "get": {
+                "description": "List all short URLs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "shorturls"
+                ],
+                "summary": "List all short URLs",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.ShortUrlReadFields"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": ""
+                    }
+                }
+            },
             "post": {
                 "description": "Create a new short url. Users may specify a slug and an expiration date. If a slug is not supplied, an 8 character slug will automatically be generated for the short url.",
                 "consumes": [

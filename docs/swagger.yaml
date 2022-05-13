@@ -65,6 +65,24 @@ info:
   version: "1.0"
 paths:
   /shorturls:
+    get:
+      consumes:
+      - application/json
+      description: List all short URLs
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.ShortUrlReadFields'
+            type: array
+        "500":
+          description: ""
+      summary: List all short URLs
+      tags:
+      - shorturls
     post:
       consumes:
       - application/json
