@@ -1,9 +1,7 @@
 package shorturls
 
 import (
-	"encoding/json"
 	"net/http"
-	"net/url"
 	"url-shortener/e"
 	"url-shortener/enums"
 	"url-shortener/middleware"
@@ -74,25 +72,7 @@ func (controller *CreateShortUrlController) Register(r *gin.Engine) {
 	r.POST("/api/v1/shorturls", middleware.ModelBindingWrapper[models.ShortUrl](controller))
 }
 
-type createShortUrlResponseHelper struct {
-	Host string
-	models.ShortUrl
-}
-
 type CreateShortUrlResponse struct {
 	ShortUrl string `json:"short_url"`
 	models.ShortUrlReadFields
-}
-
-func (r createShortUrlResponseHelper) MarshalJSON() ([]byte, error) {
-	u := url.URL{
-		Scheme: "http",
-		Host:   r.Host,
-		Path:   r.Slug,
-	}
-
-	return json.Marshal(CreateShortUrlResponse{
-		ShortUrl:           u.String(),
-		ShortUrlReadFields: r.ShortUrl.ShortUrlReadFields,
-	})
 }

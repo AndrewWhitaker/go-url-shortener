@@ -73,3 +73,11 @@ func (suite *getSuite) TestGetWithValidShortUrlReturns200() {
 			),
 		)
 }
+
+func (suite *getSuite) TestGetWithInvalidShortUrlReturns404() {
+	t := suite.T()
+	testServer := TestContext.server
+
+	testAPI := tdhttp.NewTestAPI(t, testServer)
+	testAPI.Get("/api/v1/shorturls/invalid").CmpStatus(http.StatusNotFound)
+}

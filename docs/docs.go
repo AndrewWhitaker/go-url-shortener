@@ -62,6 +62,12 @@ const docTemplate = `{
                     "404": {
                         "description": ""
                     },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/e.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": ""
                     }
@@ -69,6 +75,45 @@ const docTemplate = `{
             }
         },
         "/shorturls/{slug}": {
+            "get": {
+                "description": "Get information about an existing short URL",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "shorturls"
+                ],
+                "summary": "Get information about an existing short URL",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "slug of short URL to get information about",
+                        "name": "slug",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ShortUrlReadFields"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/e.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": ""
+                    }
+                }
+            },
             "delete": {
                 "description": "Delete an existing short URL by supplying the slug.",
                 "consumes": [

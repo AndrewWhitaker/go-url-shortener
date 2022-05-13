@@ -95,6 +95,10 @@ paths:
             $ref: '#/definitions/e.ErrorResponse'
         "404":
           description: ""
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/e.ErrorResponse'
         "500":
           description: ""
       summary: Create a new short url
@@ -123,6 +127,32 @@ paths:
         "500":
           description: ""
       summary: Delete an existing short URL
+      tags:
+      - shorturls
+    get:
+      consumes:
+      - application/json
+      description: Get information about an existing short URL
+      parameters:
+      - description: slug of short URL to get information about
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ShortUrlReadFields'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/e.ErrorResponse'
+        "500":
+          description: ""
+      summary: Get information about an existing short URL
       tags:
       - shorturls
   /shorturls/{slug}/clicks:
