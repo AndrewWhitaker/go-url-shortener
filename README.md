@@ -285,6 +285,7 @@ Ideas for scaling this include:
 
 * **End-User Experience**: I began work on a ReactJS frontend (see the `frontend` branch in this repository), but I ran out of time.
 * **Observability**: This was lower on my priority list since it was listed as "optional" in the requirements
+* **Logging**: There is basic logging in place, but I would have liked to put in structured logging for better observability.
 * **Real Deployment**: It would have been nice to get this deployed somewhere like Heroku
 
 ## Development Philosophies
