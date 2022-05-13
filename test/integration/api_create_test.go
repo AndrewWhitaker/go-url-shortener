@@ -49,6 +49,50 @@ func (suite *createSuite) TestCreateWithNewShortUrlReturns201() {
 		)
 }
 
+func (suite *createSuite) TestCreateWithInvalidLongUrlReturns400() {
+	t := suite.T()
+	testServer := TestContext.server
+
+	testAPI := tdhttp.NewTestAPI(t, testServer)
+
+	testAPI.PostJSON("/api/v1/shorturls", gin.H{"long_url": "invalid"}).
+		CmpStatus(http.StatusBadRequest).
+		CmpJSONBody(
+			td.JSON(
+				`{
+				   "errors": [
+					   {
+						   "field": "LongUrl",
+							 "reason": "url"
+						 }
+					 ],
+				 }`,
+			),
+		)
+}
+
+func (suite *createSuite) TestCreateWithInvalidSchemeReturns400() {
+	t := suite.T()
+	testServer := TestContext.server
+
+	testAPI := tdhttp.NewTestAPI(t, testServer)
+
+	testAPI.PostJSON("/api/v1/shorturls", gin.H{"long_url": "javascript:alert('hi')"}).
+		CmpStatus(http.StatusBadRequest).
+		CmpJSONBody(
+			td.JSON(
+				`{
+				   "errors": [
+					   {
+						   "field": "LongUrl",
+							 "reason": "only http and https are supported"
+						 }
+					 ],
+				 }`,
+			),
+		)
+}
+
 func (suite *createSuite) TestCreateWithExpirationDateReturns201() {
 	t := suite.T()
 

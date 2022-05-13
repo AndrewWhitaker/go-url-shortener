@@ -2,11 +2,13 @@ package services
 
 import (
 	"errors"
+	"net/url"
 	"url-shortener/enums"
 	"url-shortener/models"
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
+	"golang.org/x/exp/slices"
 	"gorm.io/gorm"
 )
 
@@ -32,7 +34,16 @@ func (s *CreateShortUrlService) Create(request *models.ShortUrl) CreationResult 
 		request.Slug = randomSlug
 	}
 
-	err := s.DB.Create(&request).Error
+	validUrl, err := validateLongUrl(request.LongUrl)
+
+	if !validUrl {
+		return CreationResult{
+			Status: enums.CreationResultInvalidLongUrl,
+			Error:  err,
+		}
+	}
+
+	err = s.DB.Create(&request).Error
 
 	if err == nil {
 		return CreationResult{
@@ -78,4 +89,16 @@ func isUniqueConstraintViolation(err error) bool {
 	var pgErr *pgconn.PgError
 
 	return errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation
+}
+
+func validateLongUrl(longUrl string) (bool, error) {
+	u, err := url.Parse(longUrl)
+
+	if err != nil {
+		return false, err
+	}
+
+	validScheme := slices.Contains([]string{"http", "https"}, u.Scheme)
+
+	return validScheme, nil
 }

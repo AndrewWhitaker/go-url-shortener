@@ -63,6 +63,16 @@ func (controller *CreateShortUrlController) HandleRequest(c *gin.Context, reques
 				},
 			},
 		}
+	case enums.CreationResultInvalidLongUrl:
+		status = http.StatusBadRequest
+		body = e.ErrorResponse{
+			Errors: []e.ValidationError{
+				{
+					Field:  "LongUrl",
+					Reason: "only http and https are supported",
+				},
+			},
+		}
 	}
 
 	c.JSON(status, body)

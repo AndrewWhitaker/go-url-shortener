@@ -13,9 +13,9 @@ type ShortUrl struct {
 }
 
 type ShortUrlCreateFields struct {
-	LongUrl   string    `json:"long_url"   gorm:"index:uq_short_urls_long_url,unique;not null" binding:"required" example:"http://www.google.com" format:"url"`
+	LongUrl   string    `json:"long_url"   gorm:"index:uq_short_urls_long_url,unique;not null" binding:"required,url" example:"http://www.google.com" format:"url"`
 	ExpiresOn null.Time `json:"expires_on" format:"dateTime" example:"2023-01-01T16:30:00Z"`
-	Slug      string    `json:"slug"       gorm:"index:uq_short_urls_slug,unique;not null"  example:"myslug"`
+	Slug      string    `json:"slug"       gorm:"index:uq_short_urls_slug,unique;not null"  example:"myslug" binding:""`
 }
 
 type ShortUrlReadFields struct {

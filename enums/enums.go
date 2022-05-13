@@ -7,6 +7,7 @@ const (
 	CreationResultCreated
 	CreationResultAlreadyExists
 	CreationResultDuplicateSlug
+	CreationResultInvalidLongUrl
 	CreationResultUnknownError
 )
 
