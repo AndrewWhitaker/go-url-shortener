@@ -200,9 +200,3 @@ func (suite *createSuite) TestCreateWithInvalidJSONReturns400() {
 			),
 		)
 }
-
-func parseDateTime(date string) (time.Time, error) {
-	t, err := time.Parse(time.RFC3339, date)
-
-	return t, err
-}

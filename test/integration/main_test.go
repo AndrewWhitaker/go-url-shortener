@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"testing"
+	"time"
 	"url-shortener/db"
 	"url-shortener/server"
 	"url-shortener/test/helpers"
@@ -81,4 +82,10 @@ func (ctx *ApiTestContext) BeforeTest() {
 	if err != nil {
 		log.Fatal("Failed to reset short_urls_id_seq", err)
 	}
+}
+
+func parseDateTime(date string) (time.Time, error) {
+	t, err := time.Parse(time.RFC3339, date)
+
+	return t, err
 }
