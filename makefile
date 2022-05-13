@@ -4,6 +4,14 @@ name = url-shortener
 build:
 	go build -o $(name)
 
+.PHONY: test
+test:
+	go test ./...
+
+.PHONY: test-short
+test-short:
+	go test -short ./...
+
 .PHONY: clean
 clean:
 	rm $(name)
