@@ -29,7 +29,7 @@ func (controller *AccessShortUrlController) HandleRequest(c *gin.Context) {
 		controller.DB.Model(&shortUrl).Association("Clicks").Append(&models.Click{})
 
 		c.Writer.Header().Set("Location", shortUrl.LongUrl)
-		c.Writer.Header().Set("Cache-Control", "private,max-age=0")
+		c.Writer.Header().Set("Cache-Control", "no-cache")
 		c.Writer.WriteHeader(http.StatusMovedPermanently)
 		return
 	}
