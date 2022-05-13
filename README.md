@@ -1,5 +1,7 @@
 # URL Shortener
 
+![main build](https://github.com/andrewwhitaker/go-url-shortener/actions/workflows/.github/workflows/go.yml/badge.svg)
+
 ## Introduction
 
 This is a URL shortening API written in Go. It supports the following high level requirements:
