@@ -26,6 +26,8 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DATABASE=postgres
+      - PORT=8080
+      - GIN_MODE=release
 volumes:
   db:
     driver: local
