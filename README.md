@@ -84,7 +84,7 @@ The application exposes the following routes:
 | `GET`         | `/api/v1/shorturls/:slug`        | Get short URL information associated with the given slug
 | `GET`         | `/api/v1/shorturls/:slug/clicks` | Get analytics data associated with the given slug
 
-Finally, there's a route that exposes Swagger documentation at `/swagger/index.html` (so `http://localhost:8080/swagger/index.html` if you're running this on the default port)
+Finally, there's a route that exposes Swagger documentation at `/swagger/index.html` (so `http://localhost:8080/swagger/index.html` if you're running this on the default port). **For more information about how each endpoint behaves, please visit this page to browse the documentation**.
 
 ## Architecture and Design
 
